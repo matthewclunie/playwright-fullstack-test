@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { createTestUser, mockUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
 
-const formErrorData = {
+export const formErrorData = {
   userExists: "This username already exists.",
   firstNameError: "First name is required.",
   lastNameError: "Last name is required.",

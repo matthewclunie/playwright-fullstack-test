@@ -20,6 +20,7 @@ export const mockUser = {
 };
 
 export const createTestUser = async (page: Page) => {
+  //should I loop through this
   await page.goto("/parabank/register");
   await page.fill("#customer.firstName", mockUser.firstName);
   await page.fill("#customer.lastName", mockUser.lastName);
