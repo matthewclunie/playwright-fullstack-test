@@ -25,9 +25,3 @@ test.describe("Password Reset Functionality", () => {
     console.log("idk man");
   });
 });
-
-test.describe("User Info Recovery", () => {
-  test("should recover lost email", async () => {});
-
-  test("should recover lost password", async () => {});
-});

@@ -9,7 +9,7 @@ import { Page } from "playwright";
 export const mockUser = {
   firstName: "Guy",
   lastName: "Testing",
-  address: "777 Example Drive",
+  street: "777 Example Drive",
   city: "New York",
   state: "NY",
   zipCode: "55555",
@@ -19,18 +19,21 @@ export const mockUser = {
   password: "ExamplePass",
 };
 
-export const createTestUser = async (page: Page) => {
+export const createUser = async (page: Page) => {
   //should I loop through this
-  await page.goto("/parabank/register");
-  await page.fill("#customer.firstName", mockUser.firstName);
-  await page.fill("#customer.lastName", mockUser.lastName);
-  await page.fill("#customer.address.state", mockUser.state);
-  await page.fill("#customer.phoneNumber", mockUser.phoneNumber);
-  await page.fill("#customer.ssn", mockUser.ssn);
-  await page.fill("#customer.username", mockUser.username);
-  await page.fill("#customer.password", mockUser.password);
+  await page.goto("/parabank/register.htm");
+  await page.fill("#customer\\.firstName", mockUser.firstName);
+  await page.fill("#customer\\.lastName", mockUser.lastName);
+  await page.fill("#customer\\.address\\.street", mockUser.street);
+  await page.fill("#customer\\.address\\.city", mockUser.city);
+  await page.fill("#customer\\.address\\.state", mockUser.state);
+  await page.fill("#customer\\.address\\.zipCode", mockUser.zipCode);
+  await page.fill("#customer\\.phoneNumber", mockUser.phoneNumber);
+  await page.fill("#customer\\.ssn", mockUser.ssn);
+  await page.fill("#customer\\.username", mockUser.username);
+  await page.fill("#customer\\.password", mockUser.password);
   await page.fill("#repeatedPassword", mockUser.password);
-  await page.click('button[type="submit"]');
+  await page.locator('[value="Register"]').click();
 };
 
 // export const createTestAccount = async (page: Page) => {};
