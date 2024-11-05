@@ -5,12 +5,12 @@
 //clicking buttons, or navigating through the UI.
 
 import { Page } from "playwright";
-import { mockUser } from "../fixtures/mockData";
 import { expect } from "playwright/test";
 
-export const login = async (page: Page) => {
-  await page.fill('[name="username"]', mockUser.username);
-  await page.fill('[name="password"]', mockUser.password);
+export const login = async (page: Page, userName: string, password: string) => {
+  await page.fill('[name="username"]', userName);
+  await page.fill('[name="password"]', password);
+  await page.getByRole("button", { name: "Log In" }).click();
 };
 
 export const logout = async (page: Page) => {
@@ -28,22 +28,26 @@ export const checkHeader = async (
   );
 };
 
-export const clearUsers = async (page: Page) => {
-  await page.goto("/parabank/admin.htm");
-  await page.locator('[value="CLEAN"]').click();
-  await page.goto("/parabank/index.htm");
+export const cleanDB = async (page: Page) => {
+  await page.request.post(
+    "https://parabank.parasoft.com/parabank/services/bank/cleanDB"
+  );
 };
+
+// export const clearUsers = async (page: Page) => {
+//   await page.goto("/parabank/admin.htm");
+//   await page.locator('[value="CLEAN"]').click();
+// };
 
 export const checkColor = async (
   page: Page,
   selector: string,
   expectedColor: string
 ) => {
-  const color = await page.evaluate(async (selector) => {
-    const element = document.querySelector(selector);
-    if (element) {
-      return window.getComputedStyle(element).color;
-    }
-  }, selector);
+  const textLocator = page.locator(selector);
+
+  const color = await textLocator.evaluate((element) => {
+    return window.getComputedStyle(element).color;
+  });
   expect(color).toBe(expectedColor);
 };

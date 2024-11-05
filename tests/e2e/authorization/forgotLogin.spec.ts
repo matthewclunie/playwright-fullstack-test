@@ -1,7 +1,7 @@
 import { test, expect, Page } from "playwright/test";
 import { formErrorData } from "./expectedMessages";
-import { checkColor, checkHeader, clearUsers } from "../../utils/helpers";
-import { createUser, mockUser } from "../../fixtures/mockData";
+import { checkColor, checkHeader, cleanDB } from "../../utils/helpers";
+import { mockUser, setupNewUser } from "../../fixtures/mockData";
 
 const fillFindUserForm = async (page: Page) => {
   await page.fill("#firstName", mockUser.firstName);
@@ -15,6 +15,10 @@ const fillFindUserForm = async (page: Page) => {
 };
 
 test.describe("Forgot Login Tests", () => {
+  test.beforeAll("Setup", async ({ browser }) => {
+    await setupNewUser(browser);
+  });
+
   test("header and details should be present", async ({ page }) => {
     const headerText = {
       title: "Customer Lookup",
@@ -32,10 +36,6 @@ test.describe("Forgot Login Tests", () => {
       caption:
         "Your login information was located successfully. You are now logged in.",
     };
-
-    //Clear database and create new user.
-    await clearUsers(page);
-    await createUser(page);
 
     await page.goto("/parabank/lookup.htm");
 
@@ -80,13 +80,14 @@ test.describe("Forgot Login Tests", () => {
       title: "Error!",
       caption: "The customer information provided could not be found.",
     };
-    await clearUsers(page);
+    await cleanDB(page);
     await page.goto("/parabank/lookup.htm");
+
     //Fill out and submit find user page
     await fillFindUserForm(page);
-    await checkHeader(page, headerText.title, headerText.caption);
 
-    // Check error message is red
+    await checkHeader(page, headerText.title, headerText.caption);
+    // Check if error message is red
     await checkColor(page, ".error", "rgb(255, 0, 0)");
   });
 });

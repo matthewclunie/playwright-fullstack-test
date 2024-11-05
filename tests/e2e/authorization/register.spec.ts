@@ -1,7 +1,22 @@
 import { test, expect } from "@playwright/test";
 import { createUser, mockUser } from "../../fixtures/mockData";
-import { checkHeader, clearUsers } from "../../utils/helpers";
+import { checkHeader, cleanDB } from "../../utils/helpers";
 import { formErrorData } from "./expectedMessages";
+
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+interface UserData {
+  id: number;
+  firstName: string;
+  lastName: string;
+  address: Address;
+  phoneNumber: string;
+  ssn: string;
+}
 
 const headerText = {
   title: "Signing up is easy!",
@@ -18,10 +33,10 @@ test.describe("User Registration Tests", () => {
   });
 
   test("should successfully register user", async ({ page }) => {
-    await clearUsers(page);
+    await cleanDB(page);
     await createUser(page);
 
-    //Registration Successful
+    //UI check for new user
     const successfulAccountText =
       "Your account was created successfully. You are now logged in.";
     await checkHeader(
@@ -30,7 +45,19 @@ test.describe("User Registration Tests", () => {
       successfulAccountText
     );
 
-    //Should be logged in - How to check if logged in? localStorage?
+    //API check for new user
+    const headers = {
+      Accept: "application/json",
+    };
+    const response = await page.request.get(
+      `https://parabank.parasoft.com/parabank/services/bank/login/${mockUser.username}/${mockUser.password}`,
+      { headers }
+    );
+    const userData: UserData = await response.json();
+    const firstNameData = userData.firstName;
+    const lastNameData = userData.lastName;
+    expect(firstNameData).toEqual(`${mockUser.firstName}`);
+    expect(lastNameData).toEqual(`${mockUser.lastName}`);
   });
 
   test("should return registration form validation errors", async ({
@@ -72,7 +99,7 @@ test.describe("User Registration Tests", () => {
   });
 
   test("should return username exists error", async ({ page }) => {
-    await clearUsers(page);
+    await cleanDB(page);
     await createUser(page);
     //Register Again
     await createUser(page);

@@ -4,7 +4,8 @@
 //Purpose: Fixtures are typically used to provide specific setup data or state needed for your tests.
 //They often include mock data, test users, or any initial state required for running tests.
 
-import { Page } from "playwright";
+import { Browser, Page } from "playwright";
+import { cleanDB } from "../utils/helpers";
 
 export const mockUser = {
   firstName: "Guy",
@@ -34,6 +35,13 @@ export const createUser = async (page: Page) => {
   await page.fill("#customer\\.password", mockUser.password);
   await page.fill("#repeatedPassword", mockUser.password);
   await page.locator('[value="Register"]').click();
+};
+
+export const setupNewUser = async (browser: Browser) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await cleanDB(page);
+  await createUser(page);
 };
 
 // export const createTestAccount = async (page: Page) => {};
