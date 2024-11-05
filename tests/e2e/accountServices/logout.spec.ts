@@ -4,7 +4,9 @@ import { login, logout } from "../../utils/helpers";
 
 test.describe("Logout Tests", () => {
   test.beforeAll("Setup", async ({ browser }) => {
-    await setupNewUser(browser);
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await setupNewUser(page);
   });
 
   test("should successfully log out", async ({ page }) => {

@@ -1,22 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { createUser, mockUser } from "../../fixtures/mockData";
-import { checkHeader, cleanDB } from "../../utils/helpers";
+import { checkHeader, cleanDB, getUserData } from "../../utils/helpers";
 import { formErrorData } from "./expectedMessages";
-
-interface Address {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-}
-interface UserData {
-  id: number;
-  firstName: string;
-  lastName: string;
-  address: Address;
-  phoneNumber: string;
-  ssn: string;
-}
+import { UserData } from "../../types/global";
 
 const headerText = {
   title: "Signing up is easy!",
@@ -46,14 +32,11 @@ test.describe("User Registration Tests", () => {
     );
 
     //API check for new user
-    const headers = {
-      Accept: "application/json",
-    };
-    const response = await page.request.get(
-      `https://parabank.parasoft.com/parabank/services/bank/login/${mockUser.username}/${mockUser.password}`,
-      { headers }
+    const userData: UserData = await getUserData(
+      page,
+      mockUser.username,
+      mockUser.password
     );
-    const userData: UserData = await response.json();
     const firstNameData = userData.firstName;
     const lastNameData = userData.lastName;
     expect(firstNameData).toEqual(`${mockUser.firstName}`);

@@ -16,7 +16,9 @@ const fillFindUserForm = async (page: Page) => {
 
 test.describe("Forgot Login Tests", () => {
   test.beforeAll("Setup", async ({ browser }) => {
-    await setupNewUser(browser);
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await setupNewUser(page);
   });
 
   test("header and details should be present", async ({ page }) => {

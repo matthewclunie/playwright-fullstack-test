@@ -37,9 +37,7 @@ export const createUser = async (page: Page) => {
   await page.locator('[value="Register"]').click();
 };
 
-export const setupNewUser = async (browser: Browser) => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
+export const setupNewUser = async (page: Page) => {
   await cleanDB(page);
   await createUser(page);
 };

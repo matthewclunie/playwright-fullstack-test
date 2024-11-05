@@ -51,3 +51,25 @@ export const checkColor = async (
   });
   expect(color).toBe(expectedColor);
 };
+
+export const getUserData = async (
+  page: Page,
+  username: string,
+  password: string
+) => {
+  const headers = {
+    Accept: "application/json",
+  };
+  const response = await page.request.get(
+    `https://parabank.parasoft.com/parabank/services/bank/login/${username}/${password}`,
+    { headers }
+  );
+  return await response.json();
+};
+
+export const getOverviewData = async (page: Page, userId: number) => {
+  const response = await page.request.get(
+    `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userId}/accounts`
+  );
+  return await response.json();
+};
