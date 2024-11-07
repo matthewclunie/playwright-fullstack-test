@@ -10,7 +10,6 @@ test.describe("Logout Tests", () => {
   });
 
   test("should successfully log out", async ({ page }) => {
-    await page.goto("/parabank/index.htm");
     //Login
     await login(page, mockUser.username, mockUser.password);
     //Log Out

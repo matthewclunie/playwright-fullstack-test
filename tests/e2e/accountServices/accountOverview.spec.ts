@@ -1,6 +1,6 @@
 import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { getOverviewData, getUserData, login } from "../../utils/helpers";
+import { getUserData, login } from "../../utils/helpers";
 import { UserData } from "../../types/global";
 
 export interface AccountData {
@@ -12,21 +12,28 @@ export interface AccountData {
 
 test.describe("Bank account tests", () => {
   let userData: UserData;
+  let accountOverviewRoute: string;
 
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
     userData = await getUserData(page, mockUser.username, mockUser.password);
+    accountOverviewRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
   });
 
-  test("request returns account overview data @API", async ({ page }) => {
-    await page.goto("https://parabank.parasoft.com/parabank/index.htm");
+  test("request should return account overview data", async ({ page }) => {
+    page.route(accountOverviewRoute, async (route) => {
+      const headers = {
+        ...route.request().headers(),
+        Accept: "application/json",
+      };
+      await route.continue({ headers });
+    });
+    const overviewPromise = page.waitForResponse(accountOverviewRoute);
     await login(page, mockUser.username, mockUser.password);
-    const overviewData: AccountData[] = await getOverviewData(
-      page,
-      userData.id
-    );
+    const overviewResponse = await overviewPromise;
+    const overviewData: AccountData[] = await overviewResponse.json();
 
     for (let i = 0; i < overviewData.length; i++) {
       //Checks for properties
@@ -50,21 +57,48 @@ test.describe("Bank account tests", () => {
   });
 
   test("should show overview data", async ({ page }) => {
-    await page.goto("https://parabank.parasoft.com/parabank/index.htm");
+    page.route(accountOverviewRoute, async (route) => {
+      const headers = {
+        ...route.request().headers(),
+        Accept: "application/json",
+      };
+      await route.continue({ headers });
+    });
+    const overviewPromise = page.waitForResponse(accountOverviewRoute);
     await login(page, mockUser.username, mockUser.password);
-    const overviewData: AccountData[] = await getOverviewData(
-      page,
-      userData.id
-    );
+    const overviewResponse = await overviewPromise;
+    const overviewData: AccountData[] = await overviewResponse.json();
 
+    //Possibly use API call to have more than one account to test this.
+
+    //Check each account overview row for correct data
     for (let i = 0; i < overviewData.length; i++) {
       const accountLink = page.locator("#accountTable a").nth(i);
       const balanceRow = page.locator("tbody tr").nth(i);
       const balanceCell = balanceRow.locator("td").nth(1);
+      const availAmountCell = balanceRow.locator("td").nth(2);
       await expect(accountLink).toHaveText(overviewData[i].id.toString());
       await expect(balanceCell).toHaveText(
         `$${overviewData[i].balance.toFixed(2)}`
       );
+      await expect(availAmountCell).toHaveText(
+        `$${overviewData[i].balance.toFixed(2)}`
+      );
     }
+
+    //Check total amount
+    const totalRow = page.locator("tbody tr").last();
+    const totalCell = totalRow.locator("td").nth(1);
+
+    const getAccountTotal = () => {
+      let total = 0;
+      for (let i = 0; i < overviewData.length; i++) {
+        total = total + overviewData[i].balance;
+      }
+      return "$" + total.toFixed(2);
+    };
+
+    const accountTotal = getAccountTotal();
+    await expect(totalCell).toHaveText(accountTotal);
   });
 });

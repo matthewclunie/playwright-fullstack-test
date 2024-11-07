@@ -8,6 +8,7 @@ import { Page } from "playwright";
 import { expect } from "playwright/test";
 
 export const login = async (page: Page, userName: string, password: string) => {
+  await page.goto("https://parabank.parasoft.com/parabank/index.htm");
   await page.fill('[name="username"]', userName);
   await page.fill('[name="password"]', password);
   await page.getByRole("button", { name: "Log In" }).click();
@@ -67,9 +68,9 @@ export const getUserData = async (
   return await response.json();
 };
 
-export const getOverviewData = async (page: Page, userId: number) => {
-  const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userId}/accounts`
-  );
-  return await response.json();
-};
+// export const getOverviewData = async (page: Page, userId: number) => {
+//   const response = await page.request.get(
+//     `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userId}/accounts`
+//   );
+//   return await response.json();
+// };

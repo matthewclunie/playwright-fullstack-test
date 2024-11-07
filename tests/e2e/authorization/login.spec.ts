@@ -13,7 +13,6 @@ test.describe("Login Tests", () => {
   });
 
   test("should successfully log in", async ({ page }) => {
-    await page.goto("/parabank/index.htm");
     //Log in
     await login(page, mockUser.username, mockUser.password);
 
@@ -42,7 +41,6 @@ test.describe("Login Tests", () => {
       title: "Error!",
       caption: "An internal error has occurred and has been logged.",
     };
-    await page.goto("/parabank/index.htm");
     await login(page, "missingUser", "wrongPassword");
     await checkHeader(page, headerText.title, headerText.caption);
   });
