@@ -1,14 +1,7 @@
 import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { getUserData, login } from "../../utils/helpers";
-import { UserData } from "../../types/global";
-
-export interface AccountData {
-  balance: number;
-  customerId: number;
-  id: number;
-  type: string;
-}
+import { AccountData, UserData } from "../../types/global";
 
 test.describe("Bank account tests", () => {
   let userData: UserData;

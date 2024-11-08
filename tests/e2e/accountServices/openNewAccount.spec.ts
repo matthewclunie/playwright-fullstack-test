@@ -1,16 +1,26 @@
 import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { getUserData, login } from "../../utils/helpers";
-import { UserData } from "../../types/global";
+import { getSingleAccountData, login } from "../../utils/helpers";
+import { AccountData } from "../../types/global";
 
-test.describe("Bank Account Recovery Tests", () => {
-  let userData: UserData;
+interface CreateAccountData {
+  id: number;
+  customerId: number;
+  type: "CHECKING" | "SAVINGS";
+  balance: number;
+}
+
+test.describe("Open new account tests", () => {
+  const createAccountRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/createAccount`;
 
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
-    userData = await getUserData(page, mockUser.username, mockUser.password);
+  });
+
+  test("request should return account overview data", async ({ page }) => {
+    //Same call is also made on this page. Shared test?
   });
 
   test("should open checking account", async ({ page }) => {
@@ -18,24 +28,17 @@ test.describe("Bank Account Recovery Tests", () => {
       title: "Account Opened!",
       caption: "Congratulations, your account is now open.",
     };
-    const route = `https://parabank.parasoft.com/parabank/services_proxy/bank/createAccount?customerId=${userData.id}`;
-    page.route(route, async (route) => {
-      const headers = {
-        ...route.request().headers(),
-        Accept: "application/json",
-      };
-      await route.continue({ headers });
-    });
-
-    const createAccountPromise = page.waitForResponse((response) => {
-      return response.url().includes(route);
-    });
 
     await login(page, mockUser.username, mockUser.password);
+    const createAccountPromise = page.waitForResponse((response) => {
+      return response.url().includes(createAccountRoute);
+    });
+
     await page.goto("/parabank/openaccount.htm");
+    await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: "Open New Account" }).click();
     const createAccountResponse = await createAccountPromise;
-    console.log(createAccountResponse);
+    const createAccountData: AccountData = await createAccountResponse.json();
     const openAccountTitle = page.locator("#openAccountResult .title");
     await expect(openAccountTitle).toHaveText(header.title);
     const openAccountCaption = page
@@ -47,11 +50,38 @@ test.describe("Bank Account Recovery Tests", () => {
       .locator("#openAccountResult")
       .locator("p")
       .nth(1);
-    await expect(newAccountDetails).toHaveText(`Your new account number:`);
+    await expect(newAccountDetails).toHaveText(
+      `Your new account number: ${createAccountData.id}`
+    );
+
+    //Check database has successfully stored new account
+    const accountData: AccountData = await getSingleAccountData(
+      page,
+      createAccountData.id
+    );
+    expect(accountData.id).toBe(createAccountData.id);
+    expect(accountData.type).toBe("CHECKING");
   });
 
   test("should open savings account", async ({ page }) => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/openaccount.htm");
+    await page.waitForLoadState("networkidle");
+    await page.locator("#type").selectOption("SAVINGS");
+    const createAccountPromise = page.waitForResponse((response) => {
+      return response.url().includes(createAccountRoute);
+    });
+    await page.getByRole("button", { name: "Open New Account" }).click();
+    const createAccountResponse = await createAccountPromise;
+    const createAccountData: CreateAccountData =
+      await createAccountResponse.json();
+
+    //Check database has successfully stored new account
+    const accountData: AccountData = await getSingleAccountData(
+      page,
+      createAccountData.id
+    );
+    expect(accountData.id).toBe(createAccountData.id);
+    expect(accountData.type).toBe("SAVINGS");
   });
 });

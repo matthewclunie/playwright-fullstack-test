@@ -35,11 +35,6 @@ export const cleanDB = async (page: Page) => {
   );
 };
 
-// export const clearUsers = async (page: Page) => {
-//   await page.goto("/parabank/admin.htm");
-//   await page.locator('[value="CLEAN"]').click();
-// };
-
 export const checkColor = async (
   page: Page,
   selector: string,
@@ -59,7 +54,7 @@ export const getUserData = async (
   password: string
 ) => {
   const headers = {
-    Accept: "application/json",
+    accept: "application/json",
   };
   const response = await page.request.get(
     `https://parabank.parasoft.com/parabank/services/bank/login/${username}/${password}`,
@@ -68,9 +63,42 @@ export const getUserData = async (
   return await response.json();
 };
 
-// export const getOverviewData = async (page: Page, userId: number) => {
-//   const response = await page.request.get(
-//     `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userId}/accounts`
-//   );
-//   return await response.json();
-// };
+export const getSingleAccountData = async (page: Page, accountId: number) => {
+  const headers = {
+    accept: "application/json",
+  };
+  const response = await page.request.get(
+    `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${accountId}`,
+    { headers }
+  );
+
+  return await response.json();
+};
+
+export const setDataAccessMode = async (
+  page: Page,
+  type: "SOAP" | "XML" | "JSON" | "JDBC"
+) => {
+  await page.goto("https://parabank.parasoft.com/parabank/admin.htm");
+  let identifier: string;
+
+  switch (true) {
+    case type === "SOAP":
+      identifier = "#accessMode1";
+      break;
+    case type === "XML":
+      identifier = "#accessMode2";
+      break;
+    case type === "JSON":
+      identifier = "#accessMode3";
+      break;
+    case type === "JDBC":
+      identifier = "#accessMode4";
+      break;
+    default:
+      identifier = "#accessMode3";
+  }
+
+  await page.locator(identifier).click();
+  await page.getByRole("button", { name: "Submit" }).click();
+};

@@ -12,3 +12,9 @@ export interface UserData {
   phoneNumber: string;
   ssn: string;
 }
+export interface AccountData {
+  balance: number;
+  customerId: number;
+  id: number;
+  type: string;
+}
