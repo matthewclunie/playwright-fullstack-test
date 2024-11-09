@@ -48,38 +48,11 @@ export const checkColor = async (
   expect(color).toBe(expectedColor);
 };
 
-export const getUserData = async (
-  page: Page,
-  username: string,
-  password: string
-) => {
-  const headers = {
-    accept: "application/json",
-  };
-  const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/login/${username}/${password}`,
-    { headers }
-  );
-  return await response.json();
-};
-
-export const getSingleAccountData = async (page: Page, accountId: number) => {
-  const headers = {
-    accept: "application/json",
-  };
-  const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${accountId}`,
-    { headers }
-  );
-
-  return await response.json();
-};
-
 export const setDataAccessMode = async (
   page: Page,
   type: "SOAP" | "XML" | "JSON" | "JDBC"
 ) => {
-  await page.goto("https://parabank.parasoft.com/parabank/admin.htm");
+  await page.goto("/parabank/admin.htm");
   let identifier: string;
 
   switch (true) {

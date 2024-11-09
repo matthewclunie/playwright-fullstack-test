@@ -1,7 +1,8 @@
-import test, { expect } from "playwright/test";
+import { test, expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { getSingleAccountData, login } from "../../utils/helpers";
+import { login } from "../../utils/helpers";
 import { AccountData } from "../../types/global";
+import { getSingleAccountData } from "../../utils/api";
 
 interface CreateAccountData {
   id: number;
@@ -10,7 +11,7 @@ interface CreateAccountData {
   balance: number;
 }
 
-test.describe("Open new account tests", () => {
+test.describe("open new account tests", () => {
   const createAccountRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/createAccount`;
 
   test.beforeAll("Setup", async ({ browser }) => {
@@ -60,7 +61,7 @@ test.describe("Open new account tests", () => {
       createAccountData.id
     );
     expect(accountData.id).toBe(createAccountData.id);
-    expect(accountData.type).toBe("CHECKING");
+    expect(accountData.type).toBe(createAccountData.type);
   });
 
   test("should open savings account", async ({ page }) => {
@@ -82,6 +83,6 @@ test.describe("Open new account tests", () => {
       createAccountData.id
     );
     expect(accountData.id).toBe(createAccountData.id);
-    expect(accountData.type).toBe("SAVINGS");
+    expect(accountData.type).toBe(createAccountData.type);
   });
 });

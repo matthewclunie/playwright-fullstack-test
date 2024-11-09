@@ -16,5 +16,5 @@ export interface AccountData {
   balance: number;
   customerId: number;
   id: number;
-  type: string;
+  type: "CHECKING" | "SAVINGS";
 }

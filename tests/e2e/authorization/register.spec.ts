@@ -1,19 +1,20 @@
 import { test, expect } from "@playwright/test";
 import { createUser, mockUser } from "../../fixtures/mockData";
-import { checkHeader, cleanDB, getUserData } from "../../utils/helpers";
+import { checkHeader, cleanDB } from "../../utils/helpers";
 import { formErrorData } from "./expectedMessages";
 import { UserData } from "../../types/global";
+import { getUserData } from "../../utils/api";
 
-const headerText = {
-  title: "Signing up is easy!",
-  caption:
-    "If you have an account with us you can sign-up for free instant online access. You will have to provide some personal information.",
-};
-
-test.describe("User Registration Tests", () => {
+test.describe("user registration tests", () => {
   test("registration header and details should be present", async ({
     page,
   }) => {
+    const headerText = {
+      title: "Signing up is easy!",
+      caption:
+        "If you have an account with us you can sign-up for free instant online access. You will have to provide some personal information.",
+    };
+
     await page.goto("/parabank/register.htm");
     await checkHeader(page, headerText.title, headerText.caption);
   });

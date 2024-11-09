@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { checkHeader, login } from "../../utils/helpers";
 
-test.describe("Login Tests", () => {
+test.describe("login tests", () => {
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();

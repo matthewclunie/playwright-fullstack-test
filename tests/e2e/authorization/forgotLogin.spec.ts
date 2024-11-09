@@ -14,7 +14,7 @@ const fillFindUserForm = async (page: Page) => {
   await page.locator('[value="Find My Login Info"]').click();
 };
 
-test.describe("Forgot Login Tests", () => {
+test.describe("forgot login tests", () => {
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();

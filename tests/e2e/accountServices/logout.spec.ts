@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
 
-test.describe("Logout Tests", () => {
+test.describe("logout tests", () => {
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();

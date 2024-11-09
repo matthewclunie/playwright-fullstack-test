@@ -1,9 +1,10 @@
 import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { getUserData, login } from "../../utils/helpers";
+import { login } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
+import { getUserData } from "../../utils/api";
 
-test.describe("Bank account tests", () => {
+test.describe("bank account tests", () => {
   let userData: UserData;
   let accountOverviewRoute: string;
 
