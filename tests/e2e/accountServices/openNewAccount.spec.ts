@@ -2,7 +2,7 @@ import { test, expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login } from "../../utils/helpers";
 import { AccountData } from "../../types/global";
-import { getSingleAccount } from "../../utils/API/accounts";
+import { getAccountById } from "../../utils/API/accounts";
 
 interface CreateAccountData {
   id: number;
@@ -56,7 +56,7 @@ test.describe("open new account tests", () => {
     );
 
     //Check database has successfully stored new account
-    const accountData: AccountData = await getSingleAccount(
+    const accountData: AccountData = await getAccountById(
       page,
       createAccountData.id
     );
@@ -78,7 +78,7 @@ test.describe("open new account tests", () => {
       await createAccountResponse.json();
 
     //Check database has successfully stored new account
-    const accountData: AccountData = await getSingleAccount(
+    const accountData: AccountData = await getAccountById(
       page,
       createAccountData.id
     );

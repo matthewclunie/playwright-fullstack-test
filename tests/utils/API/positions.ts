@@ -42,8 +42,12 @@ export const getPositionHistory = async (
 };
 
 export const getCustomerPositions = async (page: Page, customerId: number) => {
+  const headers = {
+    accept: "application/json",
+  };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/positions`
+    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/positions`,
+    { headers }
   );
   return await response.json();
 };

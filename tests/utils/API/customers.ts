@@ -1,47 +1,11 @@
 import { Page } from "playwright";
 
-// export const createAccount = async (
-//     page: Page,
-//     customerId: number,
-//     accountType: 0 | 1 | 2,
-//     accountId: number
-//   ) => {
-//     const headers = {
-//       accept: "application/json",
-//     };
-//     const response = await page.request.post(
-//       `https://parabank.parasoft.com/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${accountType}&fromAccountId=${accountId}`,
-//       { headers }
-//     );
-
-// export const getCustomerAccounts = async (page: Page, customerId: number) => {
-//     const headers = {
-//       accept: "application/json",
-//     };
-//     const response = await page.request.get(
-//       `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/accounts`,
-//       { headers }
-//     );
-//     return await response.json();
-//   };
-
 export const getCustomerDetails = async (page: Page, customerId: number) => {
   const headers = {
     accept: "application/json",
   };
   const response = await page.request.get(
     `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}`,
-    { headers }
-  );
-  return await response.json();
-};
-
-export const getCustomerPositions = async (page: Page, customerId: number) => {
-  const headers = {
-    accept: "application/json",
-  };
-  const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/positions`,
     { headers }
   );
   return await response.json();
