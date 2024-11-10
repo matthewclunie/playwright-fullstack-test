@@ -1,14 +1,9 @@
 import { test, expect, Page } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, setDataAccessMode } from "../../utils/helpers";
+import { login } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
-import {
-  createAccount,
-  getCustomerAccounts,
-  getSingleAccountData,
-  getUserData,
-} from "../../utils/api";
-import { stringify } from "querystring";
+import { createAccount } from "../../utils/API/accounts";
+import { getUserData } from "../../utils/API/misc";
 
 test.describe("transfer funds tests", () => {
   let userData: UserData;
@@ -76,11 +71,13 @@ test.describe("transfer funds tests", () => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/transfer.htm");
     const accountsResponse = await accountsPromise;
-    const accountsData = await accountsResponse.json();
+    const accountsData: AccountData[] = await accountsResponse.json();
     for (let i = 0; i < accountsData.length; i++) {
       const accountOption = page.locator("#fromAccountId option").nth(i);
       const accountId = accountsData[i].id;
       await expect(accountOption).toHaveText(accountId.toString());
     }
+    await page.locator("#amount").fill("100");
+    await page.locator("#toAccountId").selectOption(`${accountsData[1].id}`);
   });
 });

@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { createUser, mockUser } from "../../fixtures/mockData";
-import { checkHeader, cleanDB } from "../../utils/helpers";
+import { checkHeader } from "../../utils/helpers";
 import { formErrorData } from "./expectedMessages";
 import { UserData } from "../../types/global";
-import { getUserData } from "../../utils/api";
+import { cleanDB } from "../../utils/API/database";
+import { getUserData } from "../../utils/API/misc";
 
 test.describe("user registration tests", () => {
   test("registration header and details should be present", async ({

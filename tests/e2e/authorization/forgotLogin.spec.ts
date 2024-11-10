@@ -1,7 +1,8 @@
 import { test, expect, Page } from "playwright/test";
 import { formErrorData } from "./expectedMessages";
-import { checkColor, checkHeader, cleanDB } from "../../utils/helpers";
+import { checkColor, checkHeader } from "../../utils/helpers";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
+import { cleanDB } from "../../utils/API/database";
 
 const fillFindUserForm = async (page: Page) => {
   await page.fill("#firstName", mockUser.firstName);

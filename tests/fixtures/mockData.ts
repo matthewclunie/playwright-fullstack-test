@@ -5,7 +5,7 @@
 //They often include mock data, test users, or any initial state required for running tests.
 
 import { Page } from "playwright";
-import { cleanDB } from "../utils/helpers";
+import { cleanDB } from "../utils/API/database";
 
 export const mockUser = {
   firstName: "Guy",

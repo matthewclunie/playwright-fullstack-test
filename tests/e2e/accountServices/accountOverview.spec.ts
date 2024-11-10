@@ -2,7 +2,7 @@ import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
-import { getUserData } from "../../utils/api";
+import { getUserData } from "../../utils/API/misc";
 
 test.describe("bank account tests", () => {
   let userData: UserData;
