@@ -1,4 +1,5 @@
 import { Page } from "playwright";
+import { AccountData } from "../../types/global";
 
 export const billPay = async (
   page: Page,
@@ -94,4 +95,16 @@ export const withdrawFunds = async (
     `https://parabank.parasoft.com/parabank/services/bank/withdraw?accountId=${accountId}&amount=${amount}`,
     { headers }
   );
+};
+
+export const getInitialAccount = async (page: Page, customerId: number) => {
+  const headers = {
+    accept: "application/json",
+  };
+  const response = await page.request.get(
+    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/accounts`,
+    { headers }
+  );
+  const accountsData: AccountData[] = await response.json();
+  return accountsData[0];
 };

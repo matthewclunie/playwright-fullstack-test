@@ -18,3 +18,12 @@ export interface AccountData {
   id: number;
   type: "CHECKING" | "SAVINGS";
 }
+
+export interface TransactionsData {
+  id: number;
+  accountId: number;
+  type: string;
+  date: number;
+  amount: number;
+  description: string;
+}

@@ -1,24 +1,16 @@
-import { test, expect, Page } from "playwright/test";
+import { test, expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
-import { createAccount, getCustomerAccounts } from "../../utils/API/accounts";
+import {
+  createAccount,
+  getCustomerAccounts,
+  getInitialAccount,
+} from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
 
 test.describe("transfer funds tests", () => {
   let userData: UserData;
-
-  const getInitialAccount = async (page: Page, customerId: number) => {
-    const headers = {
-      accept: "application/json",
-    };
-    const response = await page.request.get(
-      `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/accounts`,
-      { headers }
-    );
-    const accountsData: AccountData[] = await response.json();
-    return accountsData[0];
-  };
 
   test.beforeAll("Setup", async ({ browser }) => {
     const context = await browser.newContext();
@@ -88,7 +80,7 @@ test.describe("transfer funds tests", () => {
     const fromAccount = accountsData[0];
     const toAccount = accountsData[1];
     await page.locator("#amount").fill(transferAmount.toString());
-    await page.locator("#toAccountId").selectOption(`${toAccount.id}`);
+    await page.locator("#toAccountId").selectOption(toAccount.id.toString());
     const transferPromise = page.waitForResponse(
       `https://parabank.parasoft.com/parabank/services_proxy/bank/transfer?fromAccountId=${fromAccount.id}&toAccountId=${toAccount.id}&amount=${transferAmount}`
     );
