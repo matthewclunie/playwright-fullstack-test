@@ -97,11 +97,15 @@ test.describe("account activity tests", () => {
       }
     };
 
-    await page.route(activityPageRoute, async (route, request) => {
-      const headers = { ...request.headers(), accept: "application/json" };
+    const sortRoute = async (route: string, body: TransactionsData[]) => {
+      await page.route(route, async (route, request) => {
+        const headers = { ...request.headers(), accept: "application/json" };
 
-      await route.fulfill({ headers, json: mockBody });
-    });
+        await route.fulfill({ headers, json: body });
+      });
+    };
+
+    await sortRoute(activityPageRoute, mockBody);
 
     await login(page, mockUser.username, mockUser.password);
     await page.goto(
@@ -122,17 +126,8 @@ test.describe("account activity tests", () => {
     const debitSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Debit`;
     const creditSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Credit`;
 
-    await page.route(debitSortRoute, async (route, request) => {
-      const headers = { ...request.headers(), accept: "application/json" };
-
-      await route.fulfill({ headers, json: mockDebit });
-    });
-
-    await page.route(creditSortRoute, async (route, request) => {
-      const headers = { ...request.headers(), accept: "application/json" };
-
-      await route.fulfill({ headers, json: mockCredit });
-    });
+    await sortRoute(debitSortRoute, mockDebit);
+    await sortRoute(creditSortRoute, mockCredit);
 
     await page.locator("#transactionType").selectOption("Debit");
     await page.getByRole("button", { name: "Go" }).click();
