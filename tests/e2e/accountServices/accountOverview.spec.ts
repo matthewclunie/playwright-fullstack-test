@@ -1,6 +1,6 @@
 import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login } from "../../utils/helpers";
+import { login, toDollar } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
 
@@ -72,11 +72,9 @@ test.describe("bank account tests", () => {
       const balanceCell = balanceRow.locator("td").nth(1);
       const availAmountCell = balanceRow.locator("td").nth(2);
       await expect(accountLink).toHaveText(overviewData[i].id.toString());
-      await expect(balanceCell).toHaveText(
-        `$${overviewData[i].balance.toFixed(2)}`
-      );
+      await expect(balanceCell).toHaveText(toDollar(overviewData[i].balance));
       await expect(availAmountCell).toHaveText(
-        `$${overviewData[i].balance.toFixed(2)}`
+        toDollar(overviewData[i].balance)
       );
     }
 
@@ -89,7 +87,7 @@ test.describe("bank account tests", () => {
       for (let i = 0; i < overviewData.length; i++) {
         total = total + overviewData[i].balance;
       }
-      return "$" + total.toFixed(2);
+      return toDollar(total);
     };
 
     const accountTotal = getAccountTotal();

@@ -69,3 +69,7 @@ export const setDataAccessMode = async (
   await page.locator(identifier).click();
   await page.getByRole("button", { name: "Submit" }).click();
 };
+
+export const toDollar = (amount: number) => {
+  return "$" + amount.toFixed(2);
+};

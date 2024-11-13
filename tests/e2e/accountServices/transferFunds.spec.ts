@@ -1,6 +1,6 @@
 import { test, expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login } from "../../utils/helpers";
+import { login, toDollar } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
 import {
   createAccount,
@@ -95,7 +95,7 @@ test.describe("transfer funds tests", () => {
       "Transfer Complete!"
     );
     await expect(page.locator("#amountResult")).toHaveText(
-      `$${transferAmount.toFixed(2)}`
+      toDollar(transferAmount)
     );
     await expect(page.locator("#fromAccountIdResult")).toHaveText(
       fromAccount.id.toString()
