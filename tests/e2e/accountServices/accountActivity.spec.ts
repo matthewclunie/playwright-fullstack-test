@@ -47,6 +47,7 @@ test.describe("account activity tests", () => {
       userData.id
     );
     const activityPageRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/All`;
+
     const mockBody = [
       {
         id: 77777,
@@ -75,25 +76,29 @@ test.describe("account activity tests", () => {
     ];
 
     const checkTransactionsTable = async (transactions: TransactionsData[]) => {
-      for (let i = 0; i < transactions.length; i++) {
-        const date = new Date(transactions[i].date);
-        const formattedDate = date
-          .toLocaleDateString("en-US")
-          .replaceAll("/", "-");
+      if (!transactions.length) {
+        await expect(page.locator("#noTransactions")).toBeVisible();
+      } else {
+        for (let i = 0; i < transactions.length; i++) {
+          const date = new Date(transactions[i].date);
+          const formattedDate = date
+            .toLocaleDateString("en-US")
+            .replaceAll("/", "-");
 
-        const transactionRow = page
-          .locator("#transactionTable tbody tr")
-          .nth(i);
-        const transactionCells = transactionRow.locator("td");
-        const dateCell = transactionCells.first();
-        const descriptionCell = transactionCells.nth(1);
-        const debitCell = transactionCells.nth(2);
-        const creditCell = transactionCells.last();
-        await expect(dateCell).toHaveText(formattedDate);
-        await expect(descriptionCell).toHaveText(transactions[i].description);
-        const isDebit =
-          transactions[i].type === "Debit" ? debitCell : creditCell;
-        await expect(isDebit).toHaveText(toDollar(transactions[i].amount));
+          const transactionRow = page
+            .locator("#transactionTable tbody tr")
+            .nth(i);
+          const transactionCells = transactionRow.locator("td");
+          const dateCell = transactionCells.first();
+          const descriptionCell = transactionCells.nth(1);
+          const debitCell = transactionCells.nth(2);
+          const creditCell = transactionCells.last();
+          await expect(dateCell).toHaveText(formattedDate);
+          await expect(descriptionCell).toHaveText(transactions[i].description);
+          const isDebit =
+            transactions[i].type === "Debit" ? debitCell : creditCell;
+          await expect(isDebit).toHaveText(toDollar(transactions[i].amount));
+        }
       }
     };
 
@@ -123,11 +128,18 @@ test.describe("account activity tests", () => {
       return transaction.type === "Credit";
     });
 
+    const mockDecFilter = mockBody.filter((transaction) => {
+      const date = new Date(transaction.date).toDateString();
+      return date.includes("Dec");
+    });
+
     const debitSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Debit`;
     const creditSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Credit`;
+    const decemberRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/December/type/All`;
 
     await sortRoute(debitSortRoute, mockDebit);
     await sortRoute(creditSortRoute, mockCredit);
+    await sortRoute(decemberRoute, mockDecFilter);
 
     await page.locator("#transactionType").selectOption("Debit");
     await page.getByRole("button", { name: "Go" }).click();
@@ -138,5 +150,15 @@ test.describe("account activity tests", () => {
     await page.getByRole("button", { name: "Go" }).click();
 
     await checkTransactionsTable(mockCredit);
+
+    await page.locator("#transactionType").selectOption("All");
+    await page.locator("#month").selectOption("December");
+    await page.getByRole("button", { name: "Go" }).click();
+
+    await checkTransactionsTable(mockDecFilter);
+
+    await page.locator("#month").selectOption("May");
+    await page.getByRole("button", { name: "Go" }).click();
+    await checkTransactionsTable([]);
   });
 });
