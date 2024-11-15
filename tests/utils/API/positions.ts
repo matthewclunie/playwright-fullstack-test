@@ -10,7 +10,7 @@ export const buyPosition = async (
   pricePerShare: number
 ) => {
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
+    `/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
   );
 };
 
@@ -24,7 +24,7 @@ export const getPositionById = async (
   pricePerShare: number
 ) => {
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
+    `/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
   );
   return await response.json();
 };
@@ -36,7 +36,7 @@ export const getPositionHistory = async (
   endDate: string
 ) => {
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/positions/${positionId}/${startDate}/${endDate}`
+    `/parabank/services/bank/positions/${positionId}/${startDate}/${endDate}`
   );
   return await response.json();
 };
@@ -46,7 +46,7 @@ export const getCustomerPositions = async (page: Page, customerId: number) => {
     accept: "application/json",
   };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/positions`,
+    `/parabank/services/bank/customers/${customerId}/positions`,
     { headers }
   );
   return await response.json();
@@ -61,6 +61,6 @@ export const sellPosition = async (
   pricePerShare: number
 ) => {
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/sellPosition?accountId=${accountId}&positionId=${positionId}&shares=${shares}&pricePerShare=${pricePerShare}`
+    `/parabank/services/bank/customers/${customerId}/sellPosition?accountId=${accountId}&positionId=${positionId}&shares=${shares}&pricePerShare=${pricePerShare}`
   );
 };

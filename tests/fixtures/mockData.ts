@@ -6,6 +6,7 @@
 
 import { Page } from "playwright";
 import { cleanDB } from "../utils/API/database";
+import { setDataAccessMode } from "../utils/helpers";
 
 export const mockUser = {
   firstName: "Guy",
@@ -39,5 +40,6 @@ export const createUser = async (page: Page) => {
 
 export const setupNewUser = async (page: Page) => {
   await cleanDB(page);
+  // await setDataAccessMode(page, "JSON");
   await createUser(page);
 };

@@ -13,7 +13,7 @@ test.describe("bank account tests", () => {
     const page = await context.newPage();
     await setupNewUser(page);
     userData = await getUserData(page, mockUser.username, mockUser.password);
-    accountOverviewRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+    accountOverviewRoute = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
   });
 
   test("request should return account overview data", async ({ page }) => {

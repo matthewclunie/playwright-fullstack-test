@@ -3,7 +3,8 @@ import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar } from "../../utils/helpers";
 import { AccountData, TransactionsData, UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
-import { getInitialAccount } from "../../utils/API/accounts";
+import { createAccount, getInitialAccount } from "../../utils/API/accounts";
+import { getAccountTransactions } from "../../utils/API/transactions";
 
 test.describe("account activity tests", () => {
   let userData: UserData;
@@ -16,7 +17,7 @@ test.describe("account activity tests", () => {
   });
 
   test("should display account activity details", async ({ page }) => {
-    const accountsUrl = `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+    const accountsUrl = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
     const accountsPromise = page.waitForResponse((response) => {
       return response.ok() && response.url() === accountsUrl;
     });
@@ -24,9 +25,7 @@ test.describe("account activity tests", () => {
     const accountsResponse = await accountsPromise;
     const accountsData: AccountData[] = await accountsResponse.json();
     const initialAccount = accountsData[0];
-    await page.goto(
-      `https://parabank.parasoft.com/parabank/activity.htm?id=${initialAccount.id}`
-    );
+    await page.goto(`/parabank/activity.htm?id=${initialAccount.id}`);
     await expect(page.locator("#accountId")).toHaveText(
       initialAccount.id.toString()
     );
@@ -46,7 +45,7 @@ test.describe("account activity tests", () => {
       page,
       userData.id
     );
-    const activityPageRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/All`;
+    const activityPageRoute = `/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/All`;
 
     const mockBody = [
       {
@@ -113,9 +112,7 @@ test.describe("account activity tests", () => {
     await sortRoute(activityPageRoute, mockBody);
 
     await login(page, mockUser.username, mockUser.password);
-    await page.goto(
-      `https://parabank.parasoft.com/parabank/activity.htm?id=${initialAccount.id}`
-    );
+    await page.goto(`/parabank/activity.htm?id=${initialAccount.id}`);
 
     await checkTransactionsTable(mockBody);
 
@@ -133,9 +130,9 @@ test.describe("account activity tests", () => {
       return date.includes("Dec");
     });
 
-    const debitSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Debit`;
-    const creditSortRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Credit`;
-    const decemberRoute = `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/December/type/All`;
+    const debitSortRoute = `/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Debit`;
+    const creditSortRoute = `/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/All/type/Credit`;
+    const decemberRoute = `/parabank/services_proxy/bank/accounts/${initialAccount.id}/transactions/month/December/type/All`;
 
     await sortRoute(debitSortRoute, mockDebit);
     await sortRoute(creditSortRoute, mockCredit);
@@ -160,5 +157,40 @@ test.describe("account activity tests", () => {
     await page.locator("#month").selectOption("May");
     await page.getByRole("button", { name: "Go" }).click();
     await checkTransactionsTable([]);
+  });
+
+  test("should drill down into transaction details", async ({ page }) => {
+    const initialAccount: AccountData = await getInitialAccount(
+      page,
+      userData.id
+    );
+    await createAccount(page, userData.id, 0, initialAccount.id);
+    const transactions: TransactionsData[] = await getAccountTransactions(
+      page,
+      initialAccount.id
+    );
+    const initialTransaction = transactions[0];
+    await login(page, mockUser.username, mockUser.password);
+    await page.goto(`/parabank/transaction.htm?id=${initialTransaction.id}`);
+    const tableRows = page.locator("tbody tr");
+    const tableRowsCount = await tableRows.count();
+
+    const data = [
+      initialTransaction["id"].toString(),
+      new Date(initialTransaction["date"])
+        .toLocaleDateString("en-US")
+        .replaceAll("/", "-"),
+      initialTransaction["description"],
+      initialTransaction["type"],
+      "$" + initialTransaction["amount"],
+    ];
+
+    console.log(data);
+
+    for (let i = 0; i < tableRowsCount; i++) {
+      const tableRow = tableRows.nth(i);
+      const dataCell = tableRow.locator("td").nth(1);
+      await expect(dataCell).toHaveText(data[i]);
+    }
   });
 });

@@ -20,7 +20,7 @@ test.describe("transfer funds tests", () => {
   });
 
   // test.skip("page on attempt", async ({ page }) => {
-  //   const route = `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+  //   const route = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
 
   //   await login(page, mockUser.username, mockUser.password);
   //   // await setDataAccessMode(page, "JSON");
@@ -35,7 +35,7 @@ test.describe("transfer funds tests", () => {
   //     const url = request.url();
   //     if (
   //       url.includes(
-  //         "https://parabank.parasoft.com/parabank/services_proxy/bank/customers"
+  //         "/parabank/services_proxy/bank/customers"
   //       )
   //     ) {
   //       const response = await request.response();
@@ -47,11 +47,10 @@ test.describe("transfer funds tests", () => {
   // });
 
   test("should transfer funds", async ({ page }) => {
-    const url = `https://parabank.parasoft.com/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+    const url = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
     const accountsPromise = page.waitForResponse(
       (response) =>
-        response.url() === url &&
-        page.url() === "https://parabank.parasoft.com/parabank/transfer.htm"
+        response.url() === url && page.url() === "/parabank/transfer.htm"
     );
 
     //set up accounts to transfer money between
@@ -82,7 +81,7 @@ test.describe("transfer funds tests", () => {
     await page.locator("#amount").fill(transferAmount.toString());
     await page.locator("#toAccountId").selectOption(toAccount.id.toString());
     const transferPromise = page.waitForResponse(
-      `https://parabank.parasoft.com/parabank/services_proxy/bank/transfer?fromAccountId=${fromAccount.id}&toAccountId=${toAccount.id}&amount=${transferAmount}`
+      `/parabank/services_proxy/bank/transfer?fromAccountId=${fromAccount.id}&toAccountId=${toAccount.id}&amount=${transferAmount}`
     );
 
     //Check for successful API POST

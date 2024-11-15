@@ -16,9 +16,7 @@ test.describe("logout tests", () => {
     await logout(page);
 
     // Verify log out with UI
-    expect(page.url()).toContain(
-      "https://parabank.parasoft.com/parabank/index.htm"
-    );
+    expect(page.url()).toContain("/parabank/index.htm");
     await expect(
       page.getByRole("heading", { name: "Customer Login" })
     ).toBeVisible();

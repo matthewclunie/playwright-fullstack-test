@@ -10,7 +10,7 @@ export const billPay = async (
     accept: "application/json",
   };
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/billpay?accountId=${accountId}&amount=${amount}`,
+    `/parabank/services/bank/billpay?accountId=${accountId}&amount=${amount}`,
     { headers }
   );
 };
@@ -25,7 +25,7 @@ export const createAccount = async (
     accept: "application/json",
   };
   const response = await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${accountType}&fromAccountId=${accountId}`,
+    `/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${accountType}&fromAccountId=${accountId}`,
     { headers }
   );
 
@@ -41,7 +41,7 @@ export const depositFunds = async (
     accept: "application/json",
   };
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/deposit?accountId=${accountId}&amount=${amount}`,
+    `/parabank/services/bank/deposit?accountId=${accountId}&amount=${amount}`,
     { headers }
   );
 };
@@ -51,7 +51,7 @@ export const getAccountById = async (page: Page, accountId: number) => {
     accept: "application/json",
   };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services_proxy/bank/accounts/${accountId}`,
+    `/parabank/services_proxy/bank/accounts/${accountId}`,
     { headers }
   );
   return await response.json();
@@ -62,7 +62,7 @@ export const getCustomerAccounts = async (page: Page, customerId: number) => {
     accept: "application/json",
   };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/accounts`,
+    `/parabank/services/bank/customers/${customerId}/accounts`,
     { headers }
   );
   return await response.json();
@@ -78,7 +78,7 @@ export const transferFunds = async (
     accept: "application/json",
   };
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/transfer?fromAccountId=${fromAccountId}&toAccountId=${toAccountId}&amount=${amount}`,
+    `/parabank/services/bank/transfer?fromAccountId=${fromAccountId}&toAccountId=${toAccountId}&amount=${amount}`,
     { headers }
   );
 };
@@ -92,7 +92,7 @@ export const withdrawFunds = async (
     accept: "application/json",
   };
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/withdraw?accountId=${accountId}&amount=${amount}`,
+    `/parabank/services/bank/withdraw?accountId=${accountId}&amount=${amount}`,
     { headers }
   );
 };
@@ -102,7 +102,7 @@ export const getInitialAccount = async (page: Page, customerId: number) => {
     accept: "application/json",
   };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}/accounts`,
+    `/parabank/services/bank/customers/${customerId}/accounts`,
     { headers }
   );
   const accountsData: AccountData[] = await response.json();

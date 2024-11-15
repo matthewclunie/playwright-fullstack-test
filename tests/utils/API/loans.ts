@@ -8,6 +8,6 @@ export const requestLoan = async (
   fromAccountId: number
 ) => {
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/requestLoan?customerId=${customerId}&amount=${amount}&downPayment=${downPayment}&fromAccountId=${fromAccountId}`
+    `/parabank/services/bank/requestLoan?customerId=${customerId}&amount=${amount}&downPayment=${downPayment}&fromAccountId=${fromAccountId}`
   );
 };

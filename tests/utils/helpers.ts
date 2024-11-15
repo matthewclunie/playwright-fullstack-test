@@ -8,7 +8,7 @@ import { Page } from "playwright";
 import { expect } from "playwright/test";
 
 export const login = async (page: Page, userName: string, password: string) => {
-  await page.goto("https://parabank.parasoft.com/parabank/index.htm");
+  await page.goto("/parabank/index.htm");
   await page.fill('[name="username"]', userName);
   await page.fill('[name="password"]', password);
   await page.getByRole("button", { name: "Log In" }).click();

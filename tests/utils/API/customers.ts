@@ -5,7 +5,7 @@ export const getCustomerDetails = async (page: Page, customerId: number) => {
     accept: "application/json",
   };
   const response = await page.request.get(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/${customerId}`,
+    `/parabank/services/bank/customers/${customerId}`,
     { headers }
   );
   return await response.json();
@@ -29,7 +29,7 @@ export const updateCustomerInfo = async (
     accept: "application/json",
   };
   await page.request.post(
-    `https://parabank.parasoft.com/parabank/services/bank/customers/update/${customerId}?firstName=${firstName}&lastName=${lastName}&street=${street}&city=${city}&state=${state}&zipCode=${zip}&phoneNumber=${phoneNumber}&ssn=${ssn}&username=${username}&password=${password}`,
+    `/parabank/services/bank/customers/update/${customerId}?firstName=${firstName}&lastName=${lastName}&street=${street}&city=${city}&state=${state}&zipCode=${zip}&phoneNumber=${phoneNumber}&ssn=${ssn}&username=${username}&password=${password}`,
     { headers }
   );
 };
