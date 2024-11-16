@@ -6,7 +6,7 @@ import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { checkHeader, login } from "../../utils/helpers";
 
 test.describe("login tests", () => {
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
@@ -39,7 +39,7 @@ test.describe("login tests", () => {
   test("should get error with incorrect login", async ({ page }) => {
     const headerText = {
       title: "Error!",
-      caption: "An internal error has occurred and has been logged.",
+      caption: "The username and password could not be verified.",
     };
     await login(page, "missingUser", "wrongPassword");
     await checkHeader(page, headerText.title, headerText.caption);

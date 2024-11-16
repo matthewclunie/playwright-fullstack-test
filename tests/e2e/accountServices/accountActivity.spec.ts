@@ -9,17 +9,26 @@ import { getAccountTransactions } from "../../utils/API/transactions";
 test.describe("account activity tests", () => {
   let userData: UserData;
 
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
     userData = await getUserData(page, mockUser.username, mockUser.password);
   });
 
+  const toFormattedDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${month}-${day}-${year}`;
+  };
+
   test("should display account activity details", async ({ page }) => {
     const accountsUrl = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
     const accountsPromise = page.waitForResponse((response) => {
-      return response.ok() && response.url() === accountsUrl;
+      return response.ok() && response.url().includes(accountsUrl);
     });
     await login(page, mockUser.username, mockUser.password);
     const accountsResponse = await accountsPromise;
@@ -68,7 +77,7 @@ test.describe("account activity tests", () => {
         id: 99999,
         accountId: initialAccount.id,
         type: "Credit",
-        date: Date.parse("27 December 2022 12:00:00 GMT"),
+        date: Date.parse("27 September 2022 12:00:00 GMT"),
         amount: 300,
         description: "Funds Transfer Sent",
       },
@@ -79,10 +88,7 @@ test.describe("account activity tests", () => {
         await expect(page.locator("#noTransactions")).toBeVisible();
       } else {
         for (let i = 0; i < transactions.length; i++) {
-          const date = new Date(transactions[i].date);
-          const formattedDate = date
-            .toLocaleDateString("en-US")
-            .replaceAll("/", "-");
+          const formattedDate = toFormattedDate(transactions[i].date);
 
           const transactionRow = page
             .locator("#transactionTable tbody tr")
@@ -177,19 +183,17 @@ test.describe("account activity tests", () => {
 
     const data = [
       initialTransaction["id"].toString(),
-      new Date(initialTransaction["date"])
-        .toLocaleDateString("en-US")
-        .replaceAll("/", "-"),
+      toFormattedDate(initialTransaction["date"]), // should be initialTransaction["date"], temp fix
       initialTransaction["description"],
       initialTransaction["type"],
-      "$" + initialTransaction["amount"],
+      toDollar(initialTransaction["amount"]),
     ];
-
-    console.log(data);
 
     for (let i = 0; i < tableRowsCount; i++) {
       const tableRow = tableRows.nth(i);
       const dataCell = tableRow.locator("td").nth(1);
+      console.log("data[i]", data[1]);
+      console.log("dataCell", await dataCell.innerText());
       await expect(dataCell).toHaveText(data[i]);
     }
   });

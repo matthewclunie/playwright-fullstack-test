@@ -12,7 +12,7 @@ import { getUserData } from "../../utils/API/misc";
 test.describe("transfer funds tests", () => {
   let userData: UserData;
 
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
@@ -48,10 +48,12 @@ test.describe("transfer funds tests", () => {
 
   test("should transfer funds", async ({ page }) => {
     const url = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
-    const accountsPromise = page.waitForResponse(
-      (response) =>
-        response.url() === url && page.url() === "/parabank/transfer.htm"
-    );
+    const accountsPromise = page.waitForResponse((response) => {
+      return (
+        response.url().includes(url) &&
+        page.url().includes("/parabank/transfer.htm")
+      );
+    });
 
     //set up accounts to transfer money between
     const initialAccount: AccountData = await getInitialAccount(

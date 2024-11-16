@@ -14,7 +14,7 @@ interface CreateAccountData {
 test.describe("open new account tests", () => {
   const createAccountRoute = `/parabank/services_proxy/bank/createAccount`;
 
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);

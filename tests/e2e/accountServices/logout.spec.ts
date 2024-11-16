@@ -3,7 +3,7 @@ import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
 
 test.describe("logout tests", () => {
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);

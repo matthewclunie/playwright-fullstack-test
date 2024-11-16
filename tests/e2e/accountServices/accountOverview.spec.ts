@@ -4,11 +4,11 @@ import { login, toDollar } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
 
-test.describe("bank account tests", () => {
+test.describe("account overview tests", () => {
   let userData: UserData;
   let accountOverviewRoute: string;
 
-  test.beforeAll("Setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
