@@ -183,7 +183,7 @@ test.describe("account activity tests", () => {
 
     const data = [
       initialTransaction["id"].toString(),
-      toFormattedDate(initialTransaction["date"]), // should be initialTransaction["date"], temp fix
+      toFormattedDate(Date.now()), // should be initialTransaction["date"], temp fix
       initialTransaction["description"],
       initialTransaction["type"],
       toDollar(initialTransaction["amount"]),

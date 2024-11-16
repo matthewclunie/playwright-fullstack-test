@@ -21,6 +21,16 @@ export const mockUser = {
   password: "ExamplePass",
 };
 
+export const mockPayee = {
+  name: "Guy Billing",
+  street: "888 Example Drive",
+  city: "New York",
+  state: "NY",
+  zipCode: "55555",
+  phoneNumber: "7777777",
+  accountNumber: "12345",
+};
+
 export const createUser = async (page: Page) => {
   //should I loop through this
   await page.goto("/parabank/register.htm");
