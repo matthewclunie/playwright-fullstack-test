@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { mockPayee, mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar } from "../../utils/helpers";
+import { getAccountTransactions } from "../../utils/API/transactions";
 
 test.describe("account activity tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
@@ -51,6 +52,20 @@ test.describe("account activity tests", () => {
     );
     await expect(page.locator("#billpayResult p").nth(1)).toHaveText(
       "See Account Activity for more details."
+    );
+
+    //Check that transaction successfully went through to backend
+    const accountTransactions = await getAccountTransactions(
+      page,
+      Number(fromAccountId)
+    );
+    expect(accountTransactions[0]).toHaveProperty(
+      "amount",
+      Number(paymentAmount)
+    );
+    expect(accountTransactions[0]).toHaveProperty(
+      "description",
+      `Bill Payment to ${mockPayee.name}`
     );
   });
 

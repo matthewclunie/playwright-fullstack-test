@@ -21,6 +21,19 @@ export const mockUser = {
   password: "ExamplePass",
 };
 
+export const mockUserUpdated = {
+  firstName: "Guy",
+  lastName: "Updating",
+  street: "777 Example Drive",
+  city: "New York",
+  state: "NY",
+  zipCode: "55555",
+  phoneNumber: "8675309",
+  ssn: "123456789",
+  username: "ExampleUser",
+  password: "ExamplePass",
+};
+
 export const mockPayee = {
   name: "Guy Billing",
   street: "888 Example Drive",
