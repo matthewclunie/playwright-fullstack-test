@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, toDollar } from "../../utils/helpers";
+import { login, toDollar, toFormattedDate } from "../../utils/helpers";
 import { AccountData, TransactionsData, UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
 import { createAccount, getInitialAccount } from "../../utils/API/accounts";
@@ -15,15 +15,6 @@ test.describe("account activity tests", () => {
     await setupNewUser(page);
     userData = await getUserData(page, mockUser.username, mockUser.password);
   });
-
-  const toFormattedDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    const year = date.getFullYear();
-
-    return `${month}-${day}-${year}`;
-  };
 
   test("should display account activity details", async ({ page }) => {
     const accountsUrl = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;

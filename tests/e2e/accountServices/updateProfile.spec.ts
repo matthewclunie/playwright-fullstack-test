@@ -55,7 +55,64 @@ test.describe("update profile tests", () => {
     expect(userData.lastName).toBe(mockUserUpdated.lastName);
   });
 
-  test("should have placeholders", async ({ page }) => {});
+  test("should have placeholders", async ({ page }) => {
+    const userPromise = page.waitForResponse((response) => {
+      return (
+        response.url().includes("/parabank/services_proxy/bank/customers") &&
+        page.url().includes("/parabank/updateprofile.htm")
+      );
+    });
+    await login(page, mockUser.username, mockUser.password);
+    await page.goto("/parabank/updateprofile.htm");
+    const userResponse = await userPromise;
+    const userData: UserData = await userResponse.json();
+    await expect(page.locator("#customer\\.firstName")).toHaveValue(
+      userData.firstName
+    );
+    await expect(page.locator("#customer\\.lastName")).toHaveValue(
+      userData.lastName
+    );
+    await expect(page.locator("#customer\\.address\\.street")).toHaveValue(
+      userData.address.street
+    );
+    await expect(page.locator("#customer\\.address\\.city")).toHaveValue(
+      userData.address.city
+    );
+    await expect(page.locator("#customer\\.address\\.state")).toHaveValue(
+      userData.address.state
+    );
+    await expect(page.locator("#customer\\.address\\.zipCode")).toHaveValue(
+      userData.address.zipCode
+    );
+    await expect(page.locator("#customer\\.phoneNumber")).toHaveValue(
+      userData.phoneNumber
+    );
+  });
 
-  test("should have form validation errors", async ({ page }) => {});
+  test("should have form validation errors", async ({ page }) => {
+    await login(page, mockUser.username, mockUser.password);
+    await page.goto("/parabank/updateprofile.htm");
+    await page.locator("#customer\\.firstName").clear();
+    await page.locator("#customer\\.lastName").clear();
+    await page.locator("#customer\\.address\\.street").clear();
+    await page.locator("#customer\\.address\\.city").clear();
+    await page.locator("#customer\\.address\\.state").clear();
+    await page.locator("#customer\\.address\\.zipCode").clear();
+    await page.locator("#customer\\.phoneNumber").clear();
+    await page.getByRole("button", { name: "Update Profile" }).click();
+    await expect(page.locator("#firstName-error")).toHaveText(
+      "First name is required."
+    );
+    await expect(page.locator("#lastName-error")).toHaveText(
+      "Last name is required."
+    );
+    await expect(page.locator("#street-error")).toHaveText(
+      "Address is required."
+    );
+    await expect(page.locator("#city-error")).toHaveText("City is required.");
+    await expect(page.locator("#state-error")).toHaveText("State is required.");
+    await expect(page.locator("#zipCode-error")).toHaveText(
+      "Zip Code is required."
+    );
+  });
 });
