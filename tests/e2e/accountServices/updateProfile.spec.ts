@@ -28,6 +28,8 @@ test.describe("update profile tests", () => {
     };
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/updateprofile.htm");
+
+    //Fill out and submit profile update form
     await page.fill("#customer\\.firstName", mockUserUpdated.firstName);
     await page.fill("#customer\\.lastName", mockUserUpdated.lastName);
     await page.fill("#customer\\.address\\.street", mockUserUpdated.street);
@@ -38,6 +40,8 @@ test.describe("update profile tests", () => {
     await page.getByRole("button", { name: "Update Profile" }).click();
     const updateUserResponse = await updateUserPromise;
     const updateUserData = await updateUserResponse.text();
+
+    //Check API response
     await expect(page.locator("#updateProfileResult h1")).toHaveText(
       headerText.title
     );
@@ -47,6 +51,7 @@ test.describe("update profile tests", () => {
     expect(updateUserData).toBe("Successfully updated customer profile");
     expect(updateUserResponse.ok()).toBe(true);
 
+    //Check database was successfully updated
     const userData: UserData = await getUserData(
       page,
       mockUserUpdated.username,
@@ -66,6 +71,8 @@ test.describe("update profile tests", () => {
     await page.goto("/parabank/updateprofile.htm");
     const userResponse = await userPromise;
     const userData: UserData = await userResponse.json();
+
+    //Check for placeholders
     await expect(page.locator("#customer\\.firstName")).toHaveValue(
       userData.firstName
     );
@@ -92,6 +99,8 @@ test.describe("update profile tests", () => {
   test("should have form validation errors", async ({ page }) => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/updateprofile.htm");
+
+    //Clear form of placeholders, submit empty form
     await page.locator("#customer\\.firstName").clear();
     await page.locator("#customer\\.lastName").clear();
     await page.locator("#customer\\.address\\.street").clear();
@@ -100,6 +109,8 @@ test.describe("update profile tests", () => {
     await page.locator("#customer\\.address\\.zipCode").clear();
     await page.locator("#customer\\.phoneNumber").clear();
     await page.getByRole("button", { name: "Update Profile" }).click();
+
+    //Check for validation errors
     await expect(page.locator("#firstName-error")).toHaveText(
       "First name is required."
     );

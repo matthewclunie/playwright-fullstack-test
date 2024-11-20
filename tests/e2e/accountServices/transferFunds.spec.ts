@@ -1,7 +1,7 @@
 import { test, expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar } from "../../utils/helpers";
-import { AccountData, UserData } from "../../types/global";
+import { AccountData, ErrorData, UserData } from "../../types/global";
 import {
   createAccount,
   getCustomerAccounts,
@@ -55,7 +55,7 @@ test.describe("transfer funds tests", () => {
       );
     });
 
-    //set up accounts to transfer money between
+    //Set up accounts to transfer money between
     const initialAccount: AccountData = await getInitialAccount(
       page,
       userData.id
@@ -108,7 +108,7 @@ test.describe("transfer funds tests", () => {
       "See Account Activity for more details."
     );
 
-    //Check API has successfully updated balances.
+    //Check API has successfully updated balances
     const postTransferAccountData: AccountData[] = await getCustomerAccounts(
       page,
       userData.id
@@ -118,6 +118,29 @@ test.describe("transfer funds tests", () => {
     );
     expect(postTransferAccountData[1].balance).toEqual(
       toAccount.balance + transferAmount
+    );
+  });
+
+  test("should return error with incomplete form submission", async ({
+    page,
+  }) => {
+    const transferPromise = page.waitForResponse((response) => {
+      return response.url().includes("/parabank/services_proxy/bank/transfer");
+    });
+    await login(page, mockUser.username, mockUser.password);
+    await page.goto("/parabank/transfer.htm");
+
+    //Submit incomplete form
+    await page.getByRole("button", { name: "Transfer" }).click();
+    const transferResponse = await transferPromise;
+    const transferData: ErrorData = await transferResponse.json();
+
+    //Check for bad request
+    expect(transferResponse.ok()).toBe(false);
+    expect(transferResponse).toHaveProperty("title", "Bad Request");
+    expect(transferData).toHaveProperty(
+      "detail",
+      "Required parameter 'amount' is not present."
     );
   });
 });

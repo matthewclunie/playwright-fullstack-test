@@ -20,10 +20,6 @@ test.describe("open new account tests", () => {
     await setupNewUser(page);
   });
 
-  test("request should return account overview data", async ({ page }) => {
-    //Same call is also made on this page. Shared test?
-  });
-
   test("should open checking account", async ({ page }) => {
     const header = {
       title: "Account Opened!",

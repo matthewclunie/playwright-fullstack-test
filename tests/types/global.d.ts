@@ -27,3 +27,11 @@ export interface TransactionsData {
   amount: number;
   description: string;
 }
+
+export interface ErrorData {
+  detail: string;
+  instance: string;
+  status: number;
+  title: string;
+  type: string;
+}
