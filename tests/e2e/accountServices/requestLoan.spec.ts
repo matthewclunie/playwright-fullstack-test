@@ -26,8 +26,8 @@ test.describe("request loan tests", () => {
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be approved
-    await page.locator("#amount").fill("50");
-    await page.locator("#downPayment").fill("10");
+    await page.fill("#amount", "50");
+    await page.fill("#downPayment", "10");
     await page.getByRole("button", { name: "Apply Now" }).click();
     const loanResponse = await loanPromise;
     const loanData: LoanData = await loanResponse.json();
@@ -72,8 +72,8 @@ test.describe("request loan tests", () => {
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be denied
-    await page.locator("#amount").fill("5000");
-    await page.locator("#downPayment").fill("100");
+    await page.fill("#amount", "5000");
+    await page.fill("#downPayment", "100");
     await page.getByRole("button", { name: "Apply Now" }).click();
     const loanResponse = await loanPromise;
     const loanData: LoanData = await loanResponse.json();

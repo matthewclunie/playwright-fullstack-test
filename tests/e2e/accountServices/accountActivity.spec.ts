@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar, toFormattedDate } from "../../utils/helpers";
-import { AccountData, TransactionsData, UserData } from "../../types/global";
+import { AccountData, TransactionData, UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
 import { createAccount, getInitialAccount } from "../../utils/API/accounts";
 import { getAccountTransactions } from "../../utils/API/transactions";
@@ -74,12 +74,13 @@ test.describe("account activity tests", () => {
       },
     ];
 
-    const checkTransactionsTable = async (transactions: TransactionsData[]) => {
+    const checkTransactionsTable = async (transactions: TransactionData[]) => {
       if (!transactions.length) {
         await expect(page.locator("#noTransactions")).toBeVisible();
       } else {
         for (let i = 0; i < transactions.length; i++) {
-          const formattedDate = toFormattedDate(transactions[i].date);
+          const { date, description, type, amount } = transactions[i];
+          const formattedDate = toFormattedDate(date);
 
           const transactionRow = page
             .locator("#transactionTable tbody tr")
@@ -89,16 +90,18 @@ test.describe("account activity tests", () => {
           const descriptionCell = transactionCells.nth(1);
           const debitCell = transactionCells.nth(2);
           const creditCell = transactionCells.last();
+
           await expect(dateCell).toHaveText(formattedDate);
-          await expect(descriptionCell).toHaveText(transactions[i].description);
-          const isDebit =
-            transactions[i].type === "Debit" ? debitCell : creditCell;
-          await expect(isDebit).toHaveText(toDollar(transactions[i].amount));
+          await expect(descriptionCell).toHaveText(description);
+          await expect(type === "Debit" ? debitCell : creditCell).toHaveText(
+            toDollar(amount)
+          );
+          await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
         }
       }
     };
 
-    const sortRoute = async (route: string, body: TransactionsData[]) => {
+    const sortRoute = async (route: string, body: TransactionData[]) => {
       await page.route(route, async (route, request) => {
         const headers = { ...request.headers(), accept: "application/json" };
 
@@ -162,7 +165,7 @@ test.describe("account activity tests", () => {
       userData.id
     );
     await createAccount(page, userData.id, 0, initialAccount.id);
-    const transactions: TransactionsData[] = await getAccountTransactions(
+    const transactions: TransactionData[] = await getAccountTransactions(
       page,
       initialAccount.id
     );

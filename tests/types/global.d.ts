@@ -19,7 +19,7 @@ export interface AccountData {
   type: "CHECKING" | "SAVINGS";
 }
 
-export interface TransactionsData {
+export interface TransactionData {
   id: number;
   accountId: number;
   type: string;

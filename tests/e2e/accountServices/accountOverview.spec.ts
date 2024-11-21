@@ -17,10 +17,10 @@ test.describe("account overview tests", () => {
   });
 
   test("request should return account overview data", async ({ page }) => {
-    page.route(accountOverviewRoute, async (route) => {
+    page.route(accountOverviewRoute, async (route, request) => {
       const headers = {
-        ...route.request().headers(),
-        Accept: "application/json",
+        ...request.headers(),
+        accept: "application/json",
       };
       await route.continue({ headers });
     });
@@ -30,6 +30,8 @@ test.describe("account overview tests", () => {
     const overviewData: AccountData[] = await overviewResponse.json();
 
     for (let i = 0; i < overviewData.length; i++) {
+      const { balance, customerId, id, type } = overviewData[i];
+
       //Checks for properties
       expect(overviewData[i]).toHaveProperty("balance");
       expect(overviewData[i]).toHaveProperty("customerId", userData.id);
@@ -37,24 +39,24 @@ test.describe("account overview tests", () => {
       expect(overviewData[i]).toHaveProperty("type");
 
       //Checks for types
-      expect(typeof overviewData[i].balance).toBe("number");
-      expect(typeof overviewData[i].customerId).toBe("number");
-      expect(typeof overviewData[i].id).toBe("number");
-      expect(typeof overviewData[i].type).toBe("string");
+      expect(typeof balance).toBe("number");
+      expect(typeof customerId).toBe("number");
+      expect(typeof id).toBe("number");
+      expect(typeof type).toBe("string");
 
       //Checks values are present
-      expect(overviewData[i].balance).toBeTruthy();
-      expect(overviewData[i].customerId).toBeTruthy();
-      expect(overviewData[i].id).toBeTruthy();
-      expect(overviewData[i].type).toBeTruthy();
+      expect(balance).toBeTruthy();
+      expect(customerId).toBeTruthy();
+      expect(id).toBeTruthy();
+      expect(type).toBeTruthy();
     }
   });
 
   test("should show overview data", async ({ page }) => {
-    page.route(accountOverviewRoute, async (route) => {
+    page.route(accountOverviewRoute, async (route, request) => {
       const headers = {
-        ...route.request().headers(),
-        Accept: "application/json",
+        ...request.headers(),
+        accept: "application/json",
       };
       await route.continue({ headers });
     });
@@ -67,15 +69,14 @@ test.describe("account overview tests", () => {
 
     //Check each account overview row for correct data
     for (let i = 0; i < overviewData.length; i++) {
+      const { id, balance } = overviewData[i];
       const accountLink = page.locator("#accountTable a").nth(i);
       const balanceRow = page.locator("tbody tr").nth(i);
       const balanceCell = balanceRow.locator("td").nth(1);
       const availAmountCell = balanceRow.locator("td").nth(2);
-      await expect(accountLink).toHaveText(overviewData[i].id.toString());
-      await expect(balanceCell).toHaveText(toDollar(overviewData[i].balance));
-      await expect(availAmountCell).toHaveText(
-        toDollar(overviewData[i].balance)
-      );
+      await expect(accountLink).toHaveText(id.toString());
+      await expect(balanceCell).toHaveText(toDollar(balance));
+      await expect(availAmountCell).toHaveText(toDollar(balance));
     }
 
     //Check total amount
