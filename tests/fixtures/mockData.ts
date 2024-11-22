@@ -29,9 +29,6 @@ export const mockUserUpdated = {
   state: "CA",
   zipCode: "55555",
   phoneNumber: "9035768",
-  ssn: "987654321",
-  username: "UpdatedUser",
-  password: "UpdatedPass",
 };
 
 export const mockPayee = {

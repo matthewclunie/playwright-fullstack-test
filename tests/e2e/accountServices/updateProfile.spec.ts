@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, logout } from "../../utils/helpers";
+import { login } from "../../utils/helpers";
 import {
   mockUser,
   mockUserUpdated,
@@ -78,11 +78,9 @@ test.describe("update profile tests", () => {
       },
     ];
 
-    const updateUserPromise = page.waitForResponse((response) => {
-      return response
-        .url()
-        .includes("/parabank/services_proxy/bank/customers/update/");
-    });
+    const updateUserPromise = page.waitForResponse(
+      "/parabank/services_proxy/bank/customers/update/**"
+    );
     const headerText = {
       title: "Profile Updated",
       caption:
@@ -90,6 +88,12 @@ test.describe("update profile tests", () => {
     };
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/updateprofile.htm");
+    await page.waitForLoadState("networkidle");
+
+    //Checks placeholders for original user data
+    for (const { selector, info } of formRows) {
+      await expect(page.locator(selector)).toHaveValue(info);
+    }
 
     //Fill out and submit profile update form
     for (const { selector, info } of formRowsUpdated) {
@@ -101,46 +105,44 @@ test.describe("update profile tests", () => {
     const updateUserResponse = await updateUserPromise;
     const updateUserData = await updateUserResponse.text();
 
-    //Check API response
+    //Check UI Confirmation
     await expect(page.locator("#updateProfileResult h1")).toHaveText(
       headerText.title
     );
     await expect(page.locator("#updateProfileResult p")).toHaveText(
       headerText.caption
     );
+
+    //Checks placeholders for updated user data
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    for (const { selector, info } of formRowsUpdated) {
+      await expect(page.locator(selector)).toHaveValue(info);
+    }
+
+    //Check API Response
     expect(updateUserResponse.ok()).toBe(true);
     expect(updateUserData).toBe("Successfully updated customer profile");
 
     //Check database was successfully updated
-    await logout(page);
-    await login(page, mockUserUpdated.username, mockUserUpdated.password);
     const userData: UserData = await getUserData(
       page,
-      mockUserUpdated.username,
-      mockUserUpdated.password
+      mockUser.username,
+      mockUser.password
     );
     expect(userData.lastName).toBe(mockUserUpdated.lastName);
   });
 
-  test("should have placeholders", async ({ page }) => {
-    await login(page, mockUser.username, mockUser.password);
-    await page.goto("/parabank/updateprofile.htm");
-
-    //Check for placeholders
-    for (const { selector, info } of formRows) {
-      await expect(page.locator(selector)).toHaveValue(info);
-    }
-  });
-
-  test("should have form validation errors", async ({ page }) => {
+  test("should have update form validation errors", async ({ page }) => {
     const formErrors = [
       {
         locator: page.locator("#firstName-error"),
         errorMsg: "First name is required.",
       },
       {
-        locator: page.locator("#firstName-error"),
-        errorMsg: "First name is required.",
+        locator: page.locator("#lastName-error"),
+        errorMsg: "Last name is required.",
       },
       {
         locator: page.locator("#street-error"),

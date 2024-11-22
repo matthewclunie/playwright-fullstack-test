@@ -1,25 +1,34 @@
 import { test, expect, Page } from "playwright/test";
-import { formErrorData } from "./expectedMessages";
 import { checkColor, checkHeader } from "../../utils/helpers";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { cleanDB } from "../../utils/API/database";
 
 const fillFindUserForm = async (page: Page) => {
-  await page.fill("#firstName", mockUser.firstName);
-  await page.fill("#lastName", mockUser.lastName);
-  await page.fill("#address\\.street", mockUser.street);
-  await page.fill("#address\\.city", mockUser.city);
-  await page.fill("#address\\.state", mockUser.state);
-  await page.fill("#address\\.zipCode", mockUser.zipCode);
-  await page.fill("#ssn", mockUser.ssn);
+  const formRows = [
+    { selector: "#firstName", info: mockUser.firstName },
+    { selector: "#lastName", info: mockUser.lastName },
+    { selector: "#address\\.street", info: mockUser.street },
+    { selector: "#address\\.city", info: mockUser.city },
+    { selector: "#address\\.state", info: mockUser.state },
+    { selector: "#address\\.zipCode", info: mockUser.zipCode },
+    { selector: "#ssn", info: mockUser.ssn },
+  ];
+
+  for (const { selector, info } of formRows) {
+    await page.fill(selector, info);
+  }
+
   await page.locator('[value="Find My Login Info"]').click();
 };
 
-test.describe("forgot login tests", () => {
+test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/parabank/lookup.htm");
   });
 
   test("header and details should be present", async ({ page }) => {
@@ -29,62 +38,73 @@ test.describe("forgot login tests", () => {
         "Please fill out the following information in order to validate your account.",
     };
 
-    await page.goto("/parabank/lookup.htm");
     await checkHeader(page, headerText.title, headerText.caption);
   });
 
-  test("Should find login info", async ({ page }) => {
+  test("should find login info", async ({ page }) => {
     const headerText = {
       title: "Customer Lookup",
       caption:
         "Your login information was located successfully. You are now logged in.",
     };
 
-    await page.goto("/parabank/lookup.htm");
-
     //Fill out and submit find user page
     await fillFindUserForm(page);
 
     //Expect info recovery confirmation message
     await checkHeader(page, headerText.title, headerText.caption);
-    await expect(page.locator("#rightPanel").locator("p").last()).toHaveText(
+    await expect(page.locator("#rightPanel p").last()).toHaveText(
       `Username: ${mockUser.username} Password: ${mockUser.password}`
     );
   });
 
-  test("should return form validation errors", async ({ page }) => {
-    await page.goto("/parabank/lookup.htm");
+  test("should return lookup form validation errors", async ({ page }) => {
     await page.locator('[value="Find My Login Info"]').click();
-    await expect(page.locator("#firstName\\.errors")).toHaveText(
-      formErrorData.firstNameError
-    );
-    await expect(page.locator("#lastName\\.errors")).toHaveText(
-      formErrorData.lastNameError
-    );
-    await expect(page.locator("#address\\.street\\.errors")).toHaveText(
-      formErrorData.streetError
-    );
-    await expect(page.locator("#address\\.city\\.errors")).toHaveText(
-      formErrorData.cityError
-    );
-    await expect(page.locator("#address\\.state\\.errors")).toHaveText(
-      formErrorData.stateError
-    );
-    await expect(page.locator("#address\\.zipCode\\.errors")).toHaveText(
-      formErrorData.zipError
-    );
-    await expect(page.locator("#ssn\\.errors")).toHaveText(
-      formErrorData.ssnError
-    );
-  });
 
+    const formErrors = [
+      {
+        locator: page.locator("#firstName\\.errors"),
+        error: "First name is required.",
+      },
+      {
+        locator: page.locator("#lastName\\.errors"),
+        error: "Last name is required.",
+      },
+      {
+        locator: page.locator("#address\\.street\\.errors"),
+        error: "Address is required.",
+      },
+      {
+        locator: page.locator("#address\\.city\\.errors"),
+        error: "City is required.",
+      },
+      {
+        locator: page.locator("#address\\.state\\.errors"),
+        error: "State is required.",
+      },
+      {
+        locator: page.locator("#address\\.zipCode\\.errors"),
+        error: "Zip Code is required.",
+      },
+      {
+        locator: page.locator("#ssn\\.errors"),
+        error: "Social Security Number is required.",
+      },
+    ];
+
+    for (const { locator, error } of formErrors) {
+      await expect(locator).toHaveText(error);
+    }
+  });
+});
+
+test.describe("without setup user", () => {
   test("should return customer not found", async ({ page }) => {
+    await page.goto("/parabank/lookup.htm");
     const headerText = {
       title: "Error!",
       caption: "The customer information provided could not be found.",
     };
-    await cleanDB(page);
-    await page.goto("/parabank/lookup.htm");
 
     //Fill out and submit find user page
     await fillFindUserForm(page);

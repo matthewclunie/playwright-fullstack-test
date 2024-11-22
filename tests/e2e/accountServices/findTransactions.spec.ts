@@ -256,7 +256,7 @@ test.describe("find transaction tests", () => {
     );
   });
 
-  test("should have form validation errors", async ({ page }) => {
+  test("should have search form validation errors", async ({ page }) => {
     const transactionSearches = [
       {
         button: page.locator("#findById"),

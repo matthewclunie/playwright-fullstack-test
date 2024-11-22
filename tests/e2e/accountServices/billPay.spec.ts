@@ -83,7 +83,7 @@ test.describe("account activity tests", () => {
     );
   });
 
-  test("should get form validation errors", async ({ page }) => {
+  test("should get bill form validation errors", async ({ page }) => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/billpay.htm");
 

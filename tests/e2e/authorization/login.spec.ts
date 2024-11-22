@@ -3,20 +3,15 @@
 
 import { test, expect } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { checkHeader, login } from "../../utils/helpers";
+import { checkHeader, login, logout } from "../../utils/helpers";
 
 test.describe("login tests", () => {
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await setupNewUser(page);
-  });
-
   test("should successfully log in", async ({ page }) => {
-    //Log in
+    await setupNewUser(page);
+    await logout(page);
     await login(page, mockUser.username, mockUser.password);
 
-    // Verify log in with UI
+    // Verify login with UI
     await expect(page).toHaveURL("/parabank/overview.htm");
     await expect(
       page.getByRole("heading", { name: "Account Services" })
