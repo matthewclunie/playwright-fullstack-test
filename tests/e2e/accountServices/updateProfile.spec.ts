@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "../../utils/helpers";
+import { login, logout } from "../../utils/helpers";
 import {
   mockUser,
   mockUserUpdated,
@@ -9,6 +9,37 @@ import { getUserData } from "../../utils/API/misc";
 import { UserData } from "../../types/global";
 
 test.describe("update profile tests", () => {
+  const formRows = [
+    {
+      selector: "#customer\\.firstName",
+      info: mockUser.firstName,
+    },
+    {
+      selector: "#customer\\.lastName",
+      info: mockUser.lastName,
+    },
+    {
+      selector: "#customer\\.address\\.street",
+      info: mockUser.street,
+    },
+    {
+      selector: "#customer\\.address\\.city",
+      info: mockUser.city,
+    },
+    {
+      selector: "#customer\\.address\\.state",
+      info: mockUser.state,
+    },
+    {
+      selector: "#customer\\.address\\.zipCode",
+      info: mockUser.zipCode,
+    },
+    {
+      selector: "#customer\\.phoneNumber",
+      info: mockUser.phoneNumber,
+    },
+  ];
+
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -16,6 +47,37 @@ test.describe("update profile tests", () => {
   });
 
   test("should update profile", async ({ page }) => {
+    const formRowsUpdated = [
+      {
+        selector: "#customer\\.firstName",
+        info: mockUserUpdated.firstName,
+      },
+      {
+        selector: "#customer\\.lastName",
+        info: mockUserUpdated.lastName,
+      },
+      {
+        selector: "#customer\\.address\\.street",
+        info: mockUserUpdated.street,
+      },
+      {
+        selector: "#customer\\.address\\.city",
+        info: mockUserUpdated.city,
+      },
+      {
+        selector: "#customer\\.address\\.state",
+        info: mockUserUpdated.state,
+      },
+      {
+        selector: "#customer\\.address\\.zipCode",
+        info: mockUserUpdated.zipCode,
+      },
+      {
+        selector: "#customer\\.phoneNumber",
+        info: mockUserUpdated.phoneNumber,
+      },
+    ];
+
     const updateUserPromise = page.waitForResponse((response) => {
       return response
         .url()
@@ -30,13 +92,11 @@ test.describe("update profile tests", () => {
     await page.goto("/parabank/updateprofile.htm");
 
     //Fill out and submit profile update form
-    await page.fill("#customer\\.firstName", mockUserUpdated.firstName);
-    await page.fill("#customer\\.lastName", mockUserUpdated.lastName);
-    await page.fill("#customer\\.address\\.street", mockUserUpdated.street);
-    await page.fill("#customer\\.address\\.city", mockUserUpdated.city);
-    await page.fill("#customer\\.address\\.state", mockUserUpdated.state);
-    await page.fill("#customer\\.address\\.zipCode", mockUserUpdated.zipCode);
-    await page.fill("#customer\\.phoneNumber", mockUserUpdated.phoneNumber);
+    for (const { selector, info } of formRowsUpdated) {
+      await page.fill(selector, info);
+    }
+
+    //Submit form
     await page.getByRole("button", { name: "Update Profile" }).click();
     const updateUserResponse = await updateUserPromise;
     const updateUserData = await updateUserResponse.text();
@@ -48,10 +108,12 @@ test.describe("update profile tests", () => {
     await expect(page.locator("#updateProfileResult p")).toHaveText(
       headerText.caption
     );
-    expect(updateUserData).toBe("Successfully updated customer profile");
     expect(updateUserResponse.ok()).toBe(true);
+    expect(updateUserData).toBe("Successfully updated customer profile");
 
     //Check database was successfully updated
+    await logout(page);
+    await login(page, mockUserUpdated.username, mockUserUpdated.password);
     const userData: UserData = await getUserData(
       page,
       mockUserUpdated.username,
@@ -61,69 +123,55 @@ test.describe("update profile tests", () => {
   });
 
   test("should have placeholders", async ({ page }) => {
-    const userPromise = page.waitForResponse((response) => {
-      return (
-        response.url().includes("/parabank/services_proxy/bank/customers") &&
-        page.url().includes("/parabank/updateprofile.htm")
-      );
-    });
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/updateprofile.htm");
-    const userResponse = await userPromise;
-    const userData: UserData = await userResponse.json();
 
     //Check for placeholders
-    await expect(page.locator("#customer\\.firstName")).toHaveValue(
-      userData.firstName
-    );
-    await expect(page.locator("#customer\\.lastName")).toHaveValue(
-      userData.lastName
-    );
-    await expect(page.locator("#customer\\.address\\.street")).toHaveValue(
-      userData.address.street
-    );
-    await expect(page.locator("#customer\\.address\\.city")).toHaveValue(
-      userData.address.city
-    );
-    await expect(page.locator("#customer\\.address\\.state")).toHaveValue(
-      userData.address.state
-    );
-    await expect(page.locator("#customer\\.address\\.zipCode")).toHaveValue(
-      userData.address.zipCode
-    );
-    await expect(page.locator("#customer\\.phoneNumber")).toHaveValue(
-      userData.phoneNumber
-    );
+    for (const { selector, info } of formRows) {
+      await expect(page.locator(selector)).toHaveValue(info);
+    }
   });
 
   test("should have form validation errors", async ({ page }) => {
+    const formErrors = [
+      {
+        locator: page.locator("#firstName-error"),
+        errorMsg: "First name is required.",
+      },
+      {
+        locator: page.locator("#firstName-error"),
+        errorMsg: "First name is required.",
+      },
+      {
+        locator: page.locator("#street-error"),
+        errorMsg: "Address is required.",
+      },
+      {
+        locator: page.locator("#city-error"),
+        errorMsg: "City is required.",
+      },
+      {
+        locator: page.locator("#state-error"),
+        errorMsg: "State is required.",
+      },
+      {
+        locator: page.locator("#zipCode-error"),
+        errorMsg: "Zip Code is required.",
+      },
+    ];
+
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/updateprofile.htm");
 
     //Clear form of placeholders, submit empty form
-    await page.locator("#customer\\.firstName").clear();
-    await page.locator("#customer\\.lastName").clear();
-    await page.locator("#customer\\.address\\.street").clear();
-    await page.locator("#customer\\.address\\.city").clear();
-    await page.locator("#customer\\.address\\.state").clear();
-    await page.locator("#customer\\.address\\.zipCode").clear();
-    await page.locator("#customer\\.phoneNumber").clear();
+    for (const { selector } of formRows) {
+      await page.locator(selector).clear();
+    }
     await page.getByRole("button", { name: "Update Profile" }).click();
 
     //Check for validation errors
-    await expect(page.locator("#firstName-error")).toHaveText(
-      "First name is required."
-    );
-    await expect(page.locator("#lastName-error")).toHaveText(
-      "Last name is required."
-    );
-    await expect(page.locator("#street-error")).toHaveText(
-      "Address is required."
-    );
-    await expect(page.locator("#city-error")).toHaveText("City is required.");
-    await expect(page.locator("#state-error")).toHaveText("State is required.");
-    await expect(page.locator("#zipCode-error")).toHaveText(
-      "Zip Code is required."
-    );
+    for (const { locator, errorMsg } of formErrors) {
+      await expect(locator).toHaveText(errorMsg);
+    }
   });
 });

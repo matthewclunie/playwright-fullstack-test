@@ -47,26 +47,26 @@ export const setDataAccessMode = async (
   type: "SOAP" | "XML" | "JSON" | "JDBC"
 ) => {
   await page.goto("/parabank/admin.htm");
-  let identifier: string;
+  let selector: string;
 
   switch (true) {
     case type === "SOAP":
-      identifier = "#accessMode1";
+      selector = "#accessMode1";
       break;
     case type === "XML":
-      identifier = "#accessMode2";
+      selector = "#accessMode2";
       break;
     case type === "JSON":
-      identifier = "#accessMode3";
+      selector = "#accessMode3";
       break;
     case type === "JDBC":
-      identifier = "#accessMode4";
+      selector = "#accessMode4";
       break;
     default:
-      identifier = "#accessMode3";
+      selector = "#accessMode3";
   }
 
-  await page.locator(identifier).click();
+  await page.locator(selector).click();
   await page.getByRole("button", { name: "Submit" }).click();
 };
 

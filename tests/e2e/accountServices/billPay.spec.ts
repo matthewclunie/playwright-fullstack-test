@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { mockPayee, mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar } from "../../utils/helpers";
-import { getAccountTransactions } from "../../utils/API/transactions";
+import { getInitialAccount } from "../../utils/API/accounts";
+import { AccountData } from "../../types/global";
 
 test.describe("account activity tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
@@ -20,28 +21,44 @@ test.describe("account activity tests", () => {
     const paymentAmount = "50";
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/billpay.htm");
-    await page.fill('[name="payee.name"]', mockPayee.name);
-    await page.fill('[name="payee.address.street"]', mockPayee.street);
-    await page.fill('[name="payee.address.city"]', mockPayee.city);
-    await page.fill('[name="payee.address.state"]', mockPayee.state);
-    await page.fill('[name="payee.address.zipCode"]', mockPayee.zipCode);
-    await page.fill('[name="payee.phoneNumber"]', mockPayee.phoneNumber);
-    await page.fill('[name="payee.accountNumber"]', mockPayee.accountNumber);
-    await page.fill('[name="verifyAccount"]', mockPayee.accountNumber);
-    await page.fill('[name="amount"]', paymentAmount);
+
+    const formRows = [
+      { selector: '[name="payee.name"]', info: mockPayee.name },
+      { selector: '[name="payee.address.street"]', info: mockPayee.street },
+      { selector: '[name="payee.address.city"]', info: mockPayee.city },
+      { selector: '[name="payee.address.state"]', info: mockPayee.state },
+      { selector: '[name="payee.address.zipCode"]', info: mockPayee.zipCode },
+      { selector: '[name="payee.phoneNumber"]', info: mockPayee.phoneNumber },
+      {
+        selector: '[name="payee.accountNumber"]',
+        info: mockPayee.accountNumber,
+      },
+      { selector: '[name="verifyAccount"]', info: mockPayee.accountNumber },
+      { selector: '[name="amount"]', info: paymentAmount },
+    ];
+
+    //Fill out form, submit bill payment
+    for (const { selector, info } of formRows) {
+      await page.fill(selector, info);
+    }
+
     const fromAccountId = await page
       .locator('[name="fromAccountId"]')
       .innerText();
-    const paymentPromise = page.waitForResponse((response) =>
-      response.url().includes("parabank/services_proxy/bank/billpay")
+    const paymentPromise = page.waitForResponse(
+      `/parabank/services_proxy/bank/billpay?accountId=${fromAccountId}&amount=${paymentAmount}`
     );
     await page.getByRole("button", { name: "Send Payment" }).click();
     const paymentResponse = await paymentPromise;
     const paymentData: PaymentData = await paymentResponse.json();
+
+    //Check for successful post
     expect(paymentResponse.ok()).toBe(true);
     expect(paymentData).toHaveProperty("accountId", Number(fromAccountId));
     expect(paymentData).toHaveProperty("amount", Number(paymentAmount));
     expect(paymentData).toHaveProperty("payeeName", mockPayee.name);
+
+    //Check for successful UI message
     await expect(page.locator("#billpayResult h1")).toHaveText(
       "Bill Payment Complete"
     );
@@ -55,15 +72,12 @@ test.describe("account activity tests", () => {
     );
 
     //Check that transaction successfully went through to backend
-    const accountTransactions = await getAccountTransactions(
+    const initialAccount: AccountData = await getInitialAccount(
       page,
       Number(fromAccountId)
     );
-    expect(accountTransactions[0]).toHaveProperty(
-      "amount",
-      Number(paymentAmount)
-    );
-    expect(accountTransactions[0]).toHaveProperty(
+    expect(initialAccount).toHaveProperty("amount", Number(paymentAmount));
+    expect(initialAccount).toHaveProperty(
       "description",
       `Bill Payment to ${mockPayee.name}`
     );
@@ -72,34 +86,37 @@ test.describe("account activity tests", () => {
   test("should get form validation errors", async ({ page }) => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/billpay.htm");
+
+    //Submit empty form
     await page.getByRole("button", { name: "Send Payment" }).click();
 
+    //Check for validation errora
     const validations = [
-      { identifier: "#validationModel-name", text: "Payee name is required." },
-      { identifier: "#validationModel-address", text: "Address is required." },
-      { identifier: "#validationModel-city", text: "City is required." },
-      { identifier: "#validationModel-state", text: "State is required." },
-      { identifier: "#validationModel-zipCode", text: "Zip Code is required." },
+      { selector: "#validationModel-name", text: "Payee name is required." },
+      { selector: "#validationModel-address", text: "Address is required." },
+      { selector: "#validationModel-city", text: "City is required." },
+      { selector: "#validationModel-state", text: "State is required." },
+      { selector: "#validationModel-zipCode", text: "Zip Code is required." },
       {
-        identifier: "#validationModel-phoneNumber",
+        selector: "#validationModel-phoneNumber",
         text: "Phone number is required.",
       },
       {
-        identifier: "#validationModel-account-empty",
+        selector: "#validationModel-account-empty",
         text: "Account number is required.",
       },
       {
-        identifier: "#validationModel-verifyAccount-empty",
+        selector: "#validationModel-verifyAccount-empty",
         text: "Account number is required.",
       },
       {
-        identifier: "#validationModel-amount-empty",
+        selector: "#validationModel-amount-empty",
         text: "The amount cannot be empty.",
       },
     ];
 
     for (const validation of validations) {
-      await expect(page.locator(validation.identifier)).toHaveText(
+      await expect(page.locator(validation.selector)).toHaveText(
         validation.text
       );
     }

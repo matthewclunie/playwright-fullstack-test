@@ -10,9 +10,7 @@ test.describe("logout tests", () => {
   });
 
   test("should successfully log out", async ({ page }) => {
-    //Login
     await login(page, mockUser.username, mockUser.password);
-    //Log Out
     await logout(page);
 
     // Verify log out with UI

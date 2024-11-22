@@ -2,28 +2,19 @@ import test, { expect } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar } from "../../utils/helpers";
 import { AccountData, UserData } from "../../types/global";
+import { createAccount, getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
 
 test.describe("account overview tests", () => {
-  let userData: UserData;
-  let accountOverviewRoute: string;
+  const accountOverviewRoute = `/parabank/services_proxy/bank/customers/*/accounts`;
 
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await setupNewUser(page);
-    userData = await getUserData(page, mockUser.username, mockUser.password);
-    accountOverviewRoute = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
   });
 
   test("request should return account overview data", async ({ page }) => {
-    page.route(accountOverviewRoute, async (route, request) => {
-      const headers = {
-        ...request.headers(),
-        accept: "application/json",
-      };
-      await route.continue({ headers });
-    });
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
     await login(page, mockUser.username, mockUser.password);
     const overviewResponse = await overviewPromise;
@@ -34,7 +25,7 @@ test.describe("account overview tests", () => {
 
       //Checks for properties
       expect(overviewData[i]).toHaveProperty("balance");
-      expect(overviewData[i]).toHaveProperty("customerId", userData.id);
+      expect(overviewData[i]).toHaveProperty("customerId");
       expect(overviewData[i]).toHaveProperty("id");
       expect(overviewData[i]).toHaveProperty("type");
 
@@ -53,19 +44,20 @@ test.describe("account overview tests", () => {
   });
 
   test("should show overview data", async ({ page }) => {
-    page.route(accountOverviewRoute, async (route, request) => {
-      const headers = {
-        ...request.headers(),
-        accept: "application/json",
-      };
-      await route.continue({ headers });
-    });
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
+    const userData: UserData = await getUserData(
+      page,
+      mockUser.username,
+      mockUser.password
+    );
+
+    //Set up multiple accounts to display in overview
+    const initialAccount = await getInitialAccount(page, userData.id);
+    await createAccount(page, userData.id, 0, initialAccount.id);
+    await createAccount(page, userData.id, 0, initialAccount.id);
     await login(page, mockUser.username, mockUser.password);
     const overviewResponse = await overviewPromise;
     const overviewData: AccountData[] = await overviewResponse.json();
-
-    //Possibly use API call to have more than one account to test this.
 
     //Check each account overview row for correct data
     for (let i = 0; i < overviewData.length; i++) {

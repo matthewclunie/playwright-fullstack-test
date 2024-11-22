@@ -11,6 +11,8 @@ import { getUserData } from "../../utils/API/misc";
 
 test.describe("transfer funds tests", () => {
   let userData: UserData;
+  const transferUrl =
+    "/parabank/services_proxy/bank/transfer?fromAccountId=*&toAccountId=*&amount=*";
 
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
@@ -19,38 +21,11 @@ test.describe("transfer funds tests", () => {
     userData = await getUserData(page, mockUser.username, mockUser.password);
   });
 
-  // test.skip("page on attempt", async ({ page }) => {
-  //   const route = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
-
-  //   await login(page, mockUser.username, mockUser.password);
-  //   // await setDataAccessMode(page, "JSON");
-
-  //   page.route(route, async (route) => {
-  //     const headers = {
-  //       accept: "application/json",
-  //     };
-  //     await route.continue({ headers });
-  //   });
-  //   page.on("request", async (request) => {
-  //     const url = request.url();
-  //     if (
-  //       url.includes(
-  //         "/parabank/services_proxy/bank/customers"
-  //       )
-  //     ) {
-  //       const response = await request.response();
-  //       const data = await response?.json();
-  //       console.log(data);
-  //     }
-  //   });
-  //   await page.goto("/parabank/transfer.htm");
-  // });
-
   test("should transfer funds", async ({ page }) => {
-    const url = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+    const accountsUrl = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
     const accountsPromise = page.waitForResponse((response) => {
       return (
-        response.url().includes(url) &&
+        response.url().includes(accountsUrl) &&
         page.url().includes("/parabank/transfer.htm")
       );
     });
@@ -82,9 +57,7 @@ test.describe("transfer funds tests", () => {
     const toAccount = accountsData[1];
     await page.locator("#amount").fill(transferAmount.toString());
     await page.locator("#toAccountId").selectOption(toAccount.id.toString());
-    const transferPromise = page.waitForResponse(
-      `/parabank/services_proxy/bank/transfer?fromAccountId=${fromAccount.id}&toAccountId=${toAccount.id}&amount=${transferAmount}`
-    );
+    const transferPromise = page.waitForResponse(transferUrl);
 
     //Check for successful API POST
     await page.getByRole("button", { name: "Transfer" }).click();
@@ -95,14 +68,14 @@ test.describe("transfer funds tests", () => {
     await expect(page.locator("#showResult h1")).toHaveText(
       "Transfer Complete!"
     );
-    await expect(page.locator("#amountResult")).toHaveText(
-      toDollar(transferAmount)
-    );
-    await expect(page.locator("#fromAccountIdResult")).toHaveText(
-      fromAccount.id.toString()
-    );
-    await expect(page.locator("#toAccountIdResult")).toHaveText(
-      toAccount.id.toString()
+    const confirmationMsg = `${toDollar(
+      transferAmount
+    )} has been transferred from account #${fromAccount.id} to account #${
+      toAccount.id
+    }.`;
+
+    await expect(page.locator("#showResult p").first()).toHaveText(
+      confirmationMsg
     );
     await expect(page.locator("#showResult p").last()).toHaveText(
       "See Account Activity for more details."
@@ -121,14 +94,13 @@ test.describe("transfer funds tests", () => {
     );
   });
 
-  test("should return error with incomplete form submission", async ({
+  test("should return error with incomplete form submission @transfer", async ({
     page,
   }) => {
-    const transferPromise = page.waitForResponse((response) => {
-      return response.url().includes("/parabank/services_proxy/bank/transfer");
-    });
+    const transferPromise = page.waitForResponse(transferUrl);
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/transfer.htm");
+    await page.waitForLoadState("networkidle");
 
     //Submit incomplete form
     await page.getByRole("button", { name: "Transfer" }).click();
@@ -137,7 +109,7 @@ test.describe("transfer funds tests", () => {
 
     //Check for bad request
     expect(transferResponse.ok()).toBe(false);
-    expect(transferResponse).toHaveProperty("title", "Bad Request");
+    expect(transferData).toHaveProperty("title", "Bad Request");
     expect(transferData).toHaveProperty(
       "detail",
       "Required parameter 'amount' is not present."

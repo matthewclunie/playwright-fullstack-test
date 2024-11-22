@@ -1,18 +1,53 @@
-import { test, expect } from "playwright/test";
+import { test, expect, Page } from "playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login } from "../../utils/helpers";
 import { AccountData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
 
-interface CreateAccountData {
-  id: number;
-  customerId: number;
-  type: "CHECKING" | "SAVINGS";
-  balance: number;
-}
-
 test.describe("open new account tests", () => {
-  const createAccountRoute = `/parabank/services_proxy/bank/createAccount`;
+  const confimationCheck = async (
+    page: Page,
+    title: string,
+    caption: string,
+    newAccountId: number
+  ) => {
+    const openAccountTitle = page.locator("#openAccountResult .title");
+    await expect(openAccountTitle).toHaveText(title);
+    const openAccountCaption = page
+      .locator("#openAccountResult")
+      .locator("p")
+      .first();
+    await expect(openAccountCaption).toHaveText(caption);
+    const newAccountDetails = page
+      .locator("#openAccountResult")
+      .locator("p")
+      .nth(1);
+    await expect(newAccountDetails).toHaveText(
+      `Your new account number: ${newAccountId}`
+    );
+  };
+
+  const createAccount = async (
+    page: Page,
+    accountType: "CHECKING" | "SAVINGS"
+  ) => {
+    await page.waitForLoadState("networkidle");
+    await page.locator("#type").selectOption(accountType);
+    await page.getByRole("button", { name: "Open New Account" }).click();
+  };
+
+  const databaseCheck = async (
+    page: Page,
+    newAccountId: number,
+    newAccountType: string
+  ) => {
+    const accountData: AccountData = await getAccountById(page, newAccountId);
+    expect(accountData.id).toBe(newAccountId);
+    expect(accountData.type).toBe(newAccountType);
+  };
+
+  const createAccountRoute =
+    "/parabank/services_proxy/bank/createAccount?customerId=*&newAccountType=*&fromAccountId=*";
 
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
@@ -26,59 +61,51 @@ test.describe("open new account tests", () => {
       caption: "Congratulations, your account is now open.",
     };
 
+    const createAccountPromise = page.waitForResponse(createAccountRoute);
     await login(page, mockUser.username, mockUser.password);
-    const createAccountPromise = page.waitForResponse((response) => {
-      return response.url().includes(createAccountRoute);
-    });
-
     await page.goto("/parabank/openaccount.htm");
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Open New Account" }).click();
+
+    //Wait for select options to load, create account
+    await createAccount(page, "CHECKING");
     const createAccountResponse = await createAccountPromise;
     const createAccountData: AccountData = await createAccountResponse.json();
-    const openAccountTitle = page.locator("#openAccountResult .title");
-    await expect(openAccountTitle).toHaveText(header.title);
-    const openAccountCaption = page
-      .locator("#openAccountResult")
-      .locator("p")
-      .first();
-    await expect(openAccountCaption).toHaveText(header.caption);
-    const newAccountDetails = page
-      .locator("#openAccountResult")
-      .locator("p")
-      .nth(1);
-    await expect(newAccountDetails).toHaveText(
-      `Your new account number: ${createAccountData.id}`
+
+    //Check UI for account creation confirmation
+    await confimationCheck(
+      page,
+      header.title,
+      header.caption,
+      createAccountData.id
     );
 
     //Check database has successfully stored new account
-    const accountData: AccountData = await getAccountById(
-      page,
-      createAccountData.id
-    );
-    expect(accountData.id).toBe(createAccountData.id);
-    expect(accountData.type).toBe(createAccountData.type);
+    await databaseCheck(page, createAccountData.id, createAccountData.type);
   });
 
   test("should open savings account", async ({ page }) => {
+    const header = {
+      title: "Account Opened!",
+      caption: "Congratulations, your account is now open.",
+    };
+
+    const createAccountPromise = page.waitForResponse(createAccountRoute);
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/openaccount.htm");
-    await page.waitForLoadState("networkidle");
-    await page.locator("#type").selectOption("SAVINGS");
-    const createAccountPromise = page.waitForResponse((response) => {
-      return response.url().includes(createAccountRoute);
-    });
-    await page.getByRole("button", { name: "Open New Account" }).click();
-    const createAccountResponse = await createAccountPromise;
-    const createAccountData: CreateAccountData =
-      await createAccountResponse.json();
 
-    //Check database has successfully stored new account
-    const accountData: AccountData = await getAccountById(
+    //Wait for select options to load, create account
+    await createAccount(page, "SAVINGS");
+    const createAccountResponse = await createAccountPromise;
+    const createAccountData: AccountData = await createAccountResponse.json();
+
+    //Check UI for account creation confirmation
+    await confimationCheck(
       page,
+      header.title,
+      header.caption,
       createAccountData.id
     );
-    expect(accountData.id).toBe(createAccountData.id);
-    expect(accountData.type).toBe(createAccountData.type);
+
+    //Check database has successfully stored new account
+    await databaseCheck(page, createAccountData.id, createAccountData.type);
   });
 });

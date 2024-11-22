@@ -17,7 +17,7 @@ test.describe("account activity tests", () => {
   });
 
   test("should display account activity details", async ({ page }) => {
-    const accountsUrl = `/parabank/services_proxy/bank/customers/${userData.id}/accounts`;
+    const accountsUrl = `/parabank/services_proxy/bank/customers/*/accounts`;
     const accountsPromise = page.waitForResponse((response) => {
       return response.ok() && response.url().includes(accountsUrl);
     });

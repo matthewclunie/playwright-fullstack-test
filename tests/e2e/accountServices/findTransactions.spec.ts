@@ -1,9 +1,31 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page, Locator } from "@playwright/test";
 import { mockUser, setupNewUser } from "../../fixtures/mockData";
 import { login, toDollar, toFormattedDate } from "../../utils/helpers";
 import { TransactionData } from "../../types/global";
 
 test.describe("find transaction tests", () => {
+  const transactionResultsCheck = async (
+    transactionRows: Locator,
+    transactionRowCount: number,
+    transactionsData: TransactionData[]
+  ) => {
+    for (let i = 0; i < transactionRowCount; i++) {
+      const transactionRow = transactionRows.nth(i);
+      const dateCell = transactionRow.locator("td").first();
+      const descCell = transactionRow.locator("td").nth(1);
+      const debitCell = transactionRow.locator("td").nth(2);
+      const creditCell = transactionRow.locator("td").last();
+      const { date, description, type, amount } = transactionsData[i];
+
+      await expect(dateCell).toHaveText(toFormattedDate(date));
+      await expect(descCell).toHaveText(description);
+      await expect(type === "Debit" ? debitCell : creditCell).toHaveText(
+        toDollar(amount)
+      );
+      await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
+    }
+  };
+
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -31,7 +53,7 @@ test.describe("find transaction tests", () => {
   //   const transaction = transactions[0];
 
   //   page.route(
-  //     "/parabank/services_proxy/bank/accounts/**/transactions/**",
+  //     "/parabank/services_proxy/bank/accounts/*/transactions/*",
   //     async (route) => {
   //       await route.abort();
   //       // const headers = {
@@ -105,8 +127,10 @@ test.describe("find transaction tests", () => {
       },
     ];
     await login(page, mockUser.username, mockUser.password);
+
+    //intercept request to mock it
     page.route(
-      "/parabank/services_proxy/bank/accounts/**/transactions/onDate/**",
+      "/parabank/services_proxy/bank/accounts/*/transactions/onDate/*",
       async (route, request) => {
         const headers = {
           ...request.headers(),
@@ -116,26 +140,20 @@ test.describe("find transaction tests", () => {
       }
     );
     await page.goto("/parabank/findtrans.htm");
+
+    //submit search
     await page.fill("#transactionDate", toFormattedDate(Date.now()));
     await page.locator("#findByDate").click();
+
+    //check transaction table
     const transactionRows = page.locator("#transactionBody tr");
     const transactionRowCount = await transactionRows.count();
 
-    for (let i = 0; i < transactionRowCount; i++) {
-      const transactionRow = transactionRows.nth(i);
-      const dateCell = transactionRow.locator("td").first();
-      const descCell = transactionRow.locator("td").nth(1);
-      const debitCell = transactionRow.locator("td").nth(2);
-      const creditCell = transactionRow.locator("td").last();
-      const { date, description, type, amount } = transactionData[i];
-
-      await expect(dateCell).toHaveText(toFormattedDate(date));
-      await expect(descCell).toHaveText(description);
-      await expect(type === "Debit" ? debitCell : creditCell).toHaveText(
-        toDollar(amount)
-      );
-      await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
-    }
+    await transactionResultsCheck(
+      transactionRows,
+      transactionRowCount,
+      transactionData
+    );
   });
 
   test("should find transaction by date range", async ({ page }) => {
@@ -157,8 +175,10 @@ test.describe("find transaction tests", () => {
         description: "Funds Transfer Received",
       },
     ];
+
+    //intercept request to mock it
     page.route(
-      "/parabank/services_proxy/bank/accounts/**/transactions/fromDate/**/toDate/**",
+      "/parabank/services_proxy/bank/accounts/*/transactions/fromDate/*/toDate/*",
       async (route, request) => {
         const headers = {
           ...request.headers(),
@@ -169,27 +189,21 @@ test.describe("find transaction tests", () => {
     );
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/findtrans.htm");
+
+    //submit search
     await page.fill("#fromDate", "10-01-2024");
     await page.fill("#toDate", "10-31-2024");
     await page.locator("#findByDateRange").click();
+
+    //check transaction table
     const transactionRows = page.locator("#transactionBody tr");
     const transactionRowCount = await transactionRows.count();
 
-    for (let i = 0; i < transactionRowCount; i++) {
-      const transactionRow = transactionRows.nth(i);
-      const dateCell = transactionRow.locator("td").first();
-      const descCell = transactionRow.locator("td").nth(1);
-      const debitCell = transactionRow.locator("td").nth(2);
-      const creditCell = transactionRow.locator("td").last();
-      const { date, description, type, amount } = transactionData[i];
-
-      await expect(dateCell).toHaveText(toFormattedDate(date));
-      await expect(descCell).toHaveText(description);
-      await expect(type === "Debit" ? debitCell : creditCell).toHaveText(
-        toDollar(amount)
-      );
-      await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
-    }
+    await transactionResultsCheck(
+      transactionRows,
+      transactionRowCount,
+      transactionData
+    );
   });
 
   test("should find transaction by amount", async ({ page }) => {
@@ -211,8 +225,10 @@ test.describe("find transaction tests", () => {
         description: "Funds Transfer Received",
       },
     ];
+
+    //intercept request to mock it
     page.route(
-      "/parabank/services_proxy/bank/accounts/**/transactions/amount/**",
+      "/parabank/services_proxy/bank/accounts/*/transactions/amount/*",
       async (route, request) => {
         const headers = {
           ...request.headers(),
@@ -221,28 +237,23 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
+
     await login(page, mockUser.username, mockUser.password);
     await page.goto("https://parabank.parasoft.com/parabank/findtrans.htm");
+
+    //submit search
     await page.fill("#amount", "400");
     await page.locator("#findByAmount").click();
+
+    //check transaction table
     const transactionRows = page.locator("#transactionBody tr");
     const transactionRowCount = await transactionRows.count();
 
-    for (let i = 0; i < transactionRowCount; i++) {
-      const transactionRow = transactionRows.nth(i);
-      const dateCell = transactionRow.locator("td").first();
-      const descCell = transactionRow.locator("td").nth(1);
-      const debitCell = transactionRow.locator("td").nth(2);
-      const creditCell = transactionRow.locator("td").last();
-      const { date, description, type, amount } = transactionData[i];
-
-      await expect(dateCell).toHaveText(toFormattedDate(date));
-      await expect(descCell).toHaveText(description);
-      await expect(type === "Debit" ? debitCell : creditCell).toHaveText(
-        toDollar(amount)
-      );
-      await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
-    }
+    await transactionResultsCheck(
+      transactionRows,
+      transactionRowCount,
+      transactionData
+    );
   });
 
   test("should have form validation errors", async ({ page }) => {
@@ -271,6 +282,7 @@ test.describe("find transaction tests", () => {
     await login(page, mockUser.username, mockUser.password);
     await page.goto("/parabank/findtrans.htm");
 
+    //check each search for errors
     for (const { button, errorLocator, errorText } of transactionSearches) {
       await button.click();
       await expect(errorLocator).toHaveText(errorText);
