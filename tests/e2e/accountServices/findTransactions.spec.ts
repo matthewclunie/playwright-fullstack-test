@@ -1,7 +1,9 @@
-import { test, expect, Page, Locator } from "@playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, toDollar, toFormattedDate } from "../../utils/helpers";
+import { expect, Locator, test } from "@playwright/test";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { TransactionData } from "../../types/global";
+import { login, toDollar, toFormattedDate } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("find transaction tests", () => {
   const transactionResultsCheck = async (
@@ -29,7 +31,7 @@ test.describe("find transaction tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   // test("should find transaction by id", async ({ page }) => {
@@ -81,7 +83,6 @@ test.describe("find transaction tests", () => {
   //       //   headers,
   //       //   url: `http://localhost:8080/parabank/services/bank/transactions/${transaction.id}`,
   //       // });
-  //       // console.log(response);
   //       // await route.fulfill({ headers, json: response });
   //     }
   //   );
@@ -126,7 +127,7 @@ test.describe("find transaction tests", () => {
         description: "Funds Transfer Received",
       },
     ];
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
 
     //intercept request to mock it
     page.route(
@@ -187,7 +188,7 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/findtrans.htm");
 
     //submit search
@@ -238,7 +239,7 @@ test.describe("find transaction tests", () => {
       }
     );
 
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("https://parabank.parasoft.com/parabank/findtrans.htm");
 
     //submit search
@@ -279,7 +280,7 @@ test.describe("find transaction tests", () => {
         errorText: "Invalid amount",
       },
     ];
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/findtrans.htm");
 
     //check each search for errors

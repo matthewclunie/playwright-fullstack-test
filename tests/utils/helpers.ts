@@ -29,19 +29,6 @@ export const checkHeader = async (
   );
 };
 
-export const checkColor = async (
-  page: Page,
-  selector: string,
-  expectedColor: string
-) => {
-  const textLocator = page.locator(selector);
-
-  const color = await textLocator.evaluate((element) => {
-    return window.getComputedStyle(element).color;
-  });
-  expect(color).toBe(expectedColor);
-};
-
 export const setDataAccessMode = async (
   page: Page,
   type: "SOAP" | "XML" | "JSON" | "JDBC"

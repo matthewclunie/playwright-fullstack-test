@@ -1,8 +1,10 @@
-import { test, expect, Page } from "playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login } from "../../utils/helpers";
+import { expect, Page, test } from "playwright/test";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { AccountData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
+import { login } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("open new account tests", () => {
   const confimationCheck = async (
@@ -52,7 +54,7 @@ test.describe("open new account tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should open checking account", async ({ page }) => {
@@ -62,7 +64,7 @@ test.describe("open new account tests", () => {
     };
 
     const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/openaccount.htm");
 
     //Wait for select options to load, create account
@@ -89,7 +91,7 @@ test.describe("open new account tests", () => {
     };
 
     const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/openaccount.htm");
 
     //Wait for select options to load, create account

@@ -1,15 +1,21 @@
 //Spec Files: Each spec file should focus on a particular aspect of the feature
 //(e.g., login.spec.ts tests various scenarios for user login).
 
-import { test, expect } from "@playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
+import { expect, test } from "@playwright/test";
+import {
+  generateLoginInfo,
+  mockUser,
+  setupNewUser,
+} from "../../fixtures/mockData";
 import { checkHeader, login, logout } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("login tests", () => {
   test("should successfully log in", async ({ page }) => {
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
     await logout(page);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
 
     // Verify login with UI
     await expect(page).toHaveURL("/parabank/overview.htm");

@@ -1,8 +1,8 @@
-import { test, expect, Page } from "@playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, toFormattedDate } from "../../utils/helpers";
-import { getAccountById } from "../../utils/API/accounts";
+import { expect, Page, test } from "@playwright/test";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { ErrorData } from "../../types/global";
+import { getAccountById } from "../../utils/API/accounts";
+import { login, toFormattedDate } from "../../utils/helpers";
 
 interface LoanData {
   responseDate: number;
@@ -10,6 +10,8 @@ interface LoanData {
   approved: boolean;
   accountId: number;
 }
+
+const loginInfo = generateLoginInfo();
 
 test.describe("request loan tests", () => {
   const loanUrl =
@@ -37,10 +39,14 @@ test.describe("request loan tests", () => {
     await expect(page.locator("#loanStatus")).toHaveText(
       loanData.approved ? "Approved" : "Denied"
     );
-    await expect(page.locator("#loanRequestApproved p").first()).toHaveText(
+    await expect(
+      loanData.approved
+        ? page.locator("#loanRequestApproved p").first()
+        : page.locator("#loanRequestDenied .error")
+    ).toHaveText(
       loanData.approved
         ? "Congratulations, your loan has been approved."
-        : "We cannot grant a loan in that amount with your available funds."
+        : "You do not have sufficient funds for the given down payment."
     );
     if (loanData.approved) {
       await expect(page.locator("#newAccountId")).toHaveText(
@@ -62,7 +68,10 @@ test.describe("request loan tests", () => {
     if (expectApproved) {
       expect(loanData.accountId).toBeGreaterThan(0);
     } else {
-      expect(loanData).toHaveProperty("message", "error.insufficient.funds");
+      expect(loanData).toHaveProperty(
+        "message",
+        "error.insufficient.funds.for.down.payment"
+      );
       expect(loanData.accountId).toBeNull();
     }
   };
@@ -70,12 +79,12 @@ test.describe("request loan tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should approve loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be approved
@@ -97,11 +106,11 @@ test.describe("request loan tests", () => {
 
   test("should deny loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be denied
-    await submitLoan(page, 5000, 100);
+    await submitLoan(page, 5000, 1000);
     const loanResponse = await loanPromise;
     const loanData: LoanData = await loanResponse.json();
 
@@ -117,7 +126,7 @@ test.describe("request loan tests", () => {
     page,
   }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
 
     //Submit incomplete form
     await page.goto("/parabank/requestloan.htm");

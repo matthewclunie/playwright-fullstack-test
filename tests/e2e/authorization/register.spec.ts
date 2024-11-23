@@ -1,8 +1,15 @@
-import { test, expect, Page } from "@playwright/test";
-import { createUser, mockUser, setupNewUser } from "../../fixtures/mockData";
-import { checkHeader } from "../../utils/helpers";
+import { expect, Page, test } from "@playwright/test";
+import {
+  createUser,
+  generateLoginInfo,
+  mockUser,
+  setupNewUser,
+} from "../../fixtures/mockData";
 import { UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
+import { checkHeader } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("requires setup user", () => {
   let page: Page;
@@ -10,7 +17,7 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should successfully register user", async () => {
@@ -19,15 +26,15 @@ test.describe("requires setup user", () => {
       "Your account was created successfully. You are now logged in.";
     await checkHeader(
       page,
-      `Welcome ${mockUser.username}`,
+      `Welcome ${loginInfo.username}`,
       successfulAccountText
     );
 
     //API check for new user
     const userData: UserData = await getUserData(
       page,
-      mockUser.username,
-      mockUser.password
+      loginInfo.username,
+      loginInfo.password
     );
     const firstNameData = userData.firstName;
     const lastNameData = userData.lastName;
@@ -36,7 +43,7 @@ test.describe("requires setup user", () => {
   });
 
   test("should return username exists error", async () => {
-    await createUser(page);
+    await createUser(page, loginInfo.username, loginInfo.password);
     await expect(page.locator("#customer\\.username\\.errors")).toHaveText(
       "This username already exists."
     );

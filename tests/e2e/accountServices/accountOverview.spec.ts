@@ -1,9 +1,11 @@
 import test, { expect } from "playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, toDollar } from "../../utils/helpers";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { AccountData, UserData } from "../../types/global";
 import { createAccount, getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
+import { login, toDollar } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("account overview tests", () => {
   const accountOverviewRoute = `/parabank/services_proxy/bank/customers/*/accounts`;
@@ -11,12 +13,12 @@ test.describe("account overview tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("request should return account overview data", async ({ page }) => {
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     const overviewResponse = await overviewPromise;
     const overviewData: AccountData[] = await overviewResponse.json();
 
@@ -47,15 +49,15 @@ test.describe("account overview tests", () => {
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
     const userData: UserData = await getUserData(
       page,
-      mockUser.username,
-      mockUser.password
+      loginInfo.username,
+      loginInfo.password
     );
 
     //Set up multiple accounts to display in overview
     const initialAccount = await getInitialAccount(page, userData.id);
     await createAccount(page, userData.id, 0, initialAccount.id);
     await createAccount(page, userData.id, 0, initialAccount.id);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     const overviewResponse = await overviewPromise;
     const overviewData: AccountData[] = await overviewResponse.json();
 

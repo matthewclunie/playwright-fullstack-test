@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+export const baseURL = process.env.BASE_URL;
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -26,6 +28,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+  globalSetup: require.resolve("./tests/global/global-setup.ts"),
+  globalTeardown: require.resolve("./tests/global/global-teardown.ts"),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

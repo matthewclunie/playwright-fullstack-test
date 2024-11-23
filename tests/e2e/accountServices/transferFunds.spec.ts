@@ -1,6 +1,5 @@
-import { test, expect } from "playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
-import { login, toDollar } from "../../utils/helpers";
+import { expect, test } from "playwright/test";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { AccountData, ErrorData, UserData } from "../../types/global";
 import {
   createAccount,
@@ -8,6 +7,9 @@ import {
   getInitialAccount,
 } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
+import { login, toDollar } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("transfer funds tests", () => {
   let userData: UserData;
@@ -17,8 +19,8 @@ test.describe("transfer funds tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
-    userData = await getUserData(page, mockUser.username, mockUser.password);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    userData = await getUserData(page, loginInfo.username, loginInfo.password);
   });
 
   test("should transfer funds", async ({ page }) => {
@@ -37,7 +39,7 @@ test.describe("transfer funds tests", () => {
     );
     await createAccount(page, initialAccount.customerId, 0, initialAccount.id);
     await createAccount(page, initialAccount.customerId, 0, initialAccount.id);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
 
     //Check that all accounts are available for transfer
     await page.goto("/parabank/transfer.htm");
@@ -98,7 +100,7 @@ test.describe("transfer funds tests", () => {
     page,
   }) => {
     const transferPromise = page.waitForResponse(transferUrl);
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/transfer.htm");
     await page.waitForLoadState("networkidle");
 

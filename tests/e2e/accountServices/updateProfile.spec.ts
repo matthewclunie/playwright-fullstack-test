@@ -1,12 +1,15 @@
-import { test, expect } from "@playwright/test";
-import { login } from "../../utils/helpers";
+import { expect, test } from "@playwright/test";
 import {
+  generateLoginInfo,
   mockUser,
   mockUserUpdated,
   setupNewUser,
 } from "../../fixtures/mockData";
-import { getUserData } from "../../utils/API/misc";
 import { UserData } from "../../types/global";
+import { getUserData } from "../../utils/API/misc";
+import { login } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("update profile tests", () => {
   const formRows = [
@@ -43,7 +46,7 @@ test.describe("update profile tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should update profile", async ({ page }) => {
@@ -86,7 +89,7 @@ test.describe("update profile tests", () => {
       caption:
         "Your updated address and phone number have been added to the system.",
     };
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/updateprofile.htm");
     await page.waitForLoadState("networkidle");
 
@@ -128,9 +131,10 @@ test.describe("update profile tests", () => {
     //Check database was successfully updated
     const userData: UserData = await getUserData(
       page,
-      mockUser.username,
-      mockUser.password
+      loginInfo.username,
+      loginInfo.password
     );
+
     expect(userData.lastName).toBe(mockUserUpdated.lastName);
   });
 
@@ -162,7 +166,7 @@ test.describe("update profile tests", () => {
       },
     ];
 
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/updateprofile.htm");
 
     //Clear form of placeholders, submit empty form

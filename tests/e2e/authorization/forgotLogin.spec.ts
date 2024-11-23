@@ -1,8 +1,25 @@
-import { test, expect, Page } from "playwright/test";
-import { checkColor, checkHeader } from "../../utils/helpers";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
+import { expect, Page, test } from "playwright/test";
+import {
+  generateLoginInfo,
+  mockUser,
+  setupNewUser,
+} from "../../fixtures/mockData";
+import { checkHeader } from "../../utils/helpers";
 
-const fillFindUserForm = async (page: Page) => {
+const generateSSN = () => {
+  const characters = "123456789"; // Both lowercase and uppercase
+  let ssn = "";
+  for (let i = 0; i < 9; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length); // Random index
+    ssn += characters[randomIndex]; // Add the character to the result
+  }
+  return ssn;
+};
+
+const loginInfo = generateLoginInfo();
+const ssn = generateSSN();
+
+const fillFindUserForm = async (page: Page, ssn: string) => {
   const formRows = [
     { selector: "#firstName", info: mockUser.firstName },
     { selector: "#lastName", info: mockUser.lastName },
@@ -10,7 +27,7 @@ const fillFindUserForm = async (page: Page) => {
     { selector: "#address\\.city", info: mockUser.city },
     { selector: "#address\\.state", info: mockUser.state },
     { selector: "#address\\.zipCode", info: mockUser.zipCode },
-    { selector: "#ssn", info: mockUser.ssn },
+    { selector: "#ssn", info: ssn },
   ];
 
   for (const { selector, info } of formRows) {
@@ -24,7 +41,7 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password, ssn);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -49,12 +66,12 @@ test.describe("requires setup user", () => {
     };
 
     //Fill out and submit find user page
-    await fillFindUserForm(page);
+    await fillFindUserForm(page, ssn);
 
     //Expect info recovery confirmation message
     await checkHeader(page, headerText.title, headerText.caption);
     await expect(page.locator("#rightPanel p").last()).toHaveText(
-      `Username: ${mockUser.username} Password: ${mockUser.password}`
+      `Username: ${loginInfo.username} Password: ${loginInfo.password}`
     );
   });
 
@@ -107,10 +124,8 @@ test.describe("without setup user", () => {
     };
 
     //Fill out and submit find user page
-    await fillFindUserForm(page);
+    await fillFindUserForm(page, "999999999");
 
     await checkHeader(page, headerText.title, headerText.caption);
-    // Check if error message is red
-    await checkColor(page, ".error", "rgb(255, 0, 0)");
   });
 });

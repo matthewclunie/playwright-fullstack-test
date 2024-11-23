@@ -1,16 +1,18 @@
-import { test, expect } from "@playwright/test";
-import { mockUser, setupNewUser } from "../../fixtures/mockData";
+import { expect, test } from "@playwright/test";
+import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
+
+const loginInfo = generateLoginInfo();
 
 test.describe("logout tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should successfully log out", async ({ page }) => {
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await logout(page);
 
     // Verify log out with UI

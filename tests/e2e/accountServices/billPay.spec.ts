@@ -1,14 +1,21 @@
-import { test, expect } from "@playwright/test";
-import { mockPayee, mockUser, setupNewUser } from "../../fixtures/mockData";
+import { expect, test } from "@playwright/test";
+import {
+  generateLoginInfo,
+  mockPayee,
+  setupNewUser,
+} from "../../fixtures/mockData";
+import { AccountData, TransactionData } from "../../types/global";
+import { getAccountById, getInitialAccount } from "../../utils/API/accounts";
 import { login, toDollar } from "../../utils/helpers";
-import { getInitialAccount } from "../../utils/API/accounts";
-import { AccountData } from "../../types/global";
+import { getAccountTransactions } from "../../utils/API/transactions";
 
-test.describe("account activity tests", () => {
+const loginInfo = generateLoginInfo();
+
+test.describe("bill payment tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page);
+    await setupNewUser(page, loginInfo.username, loginInfo.password);
   });
 
   interface PaymentData {
@@ -19,7 +26,7 @@ test.describe("account activity tests", () => {
 
   test("should submit bill payment", async ({ page }) => {
     const paymentAmount = "50";
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/billpay.htm");
 
     const formRows = [
@@ -72,19 +79,21 @@ test.describe("account activity tests", () => {
     );
 
     //Check that transaction successfully went through to backend
-    const initialAccount: AccountData = await getInitialAccount(
+    const accountTransactions: TransactionData[] = await getAccountTransactions(
       page,
       Number(fromAccountId)
     );
-    expect(initialAccount).toHaveProperty("amount", Number(paymentAmount));
-    expect(initialAccount).toHaveProperty(
+    const initialTransaction: TransactionData = accountTransactions[0];
+
+    expect(initialTransaction).toHaveProperty("amount", Number(paymentAmount));
+    expect(initialTransaction).toHaveProperty(
       "description",
       `Bill Payment to ${mockPayee.name}`
     );
   });
 
   test("should get bill form validation errors", async ({ page }) => {
-    await login(page, mockUser.username, mockUser.password);
+    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/billpay.htm");
 
     //Submit empty form
