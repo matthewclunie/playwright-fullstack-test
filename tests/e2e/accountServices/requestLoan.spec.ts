@@ -1,5 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { ErrorData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
 import { login, toFormattedDate } from "../../utils/helpers";
@@ -79,7 +79,7 @@ test.describe("request loan tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should approve loan", async ({ page }) => {
@@ -90,13 +90,13 @@ test.describe("request loan tests", () => {
     //Submit loan to be approved
     await submitLoan(page, 50, 10);
     const loanResponse = await loanPromise;
+    expect(loanResponse.ok()).toBe(true);
     const loanData: LoanData = await loanResponse.json();
 
     //Check UI for approved loan
     await checkApprovedLoan(page, loanData);
 
     //Check API response
-    expect(loanResponse.ok()).toBe(true);
     await checkApprovedLoanAPI(loanData, true);
 
     //Check that loan is in the database
@@ -112,17 +112,17 @@ test.describe("request loan tests", () => {
     //Submit loan to be denied
     await submitLoan(page, 5000, 1000);
     const loanResponse = await loanPromise;
+    expect(loanResponse.ok()).toBe(true);
     const loanData: LoanData = await loanResponse.json();
 
     //Check UI for denial
-    expect(loanResponse.ok()).toBe(true);
     await checkApprovedLoan(page, loanData);
 
     //Check API response
     await checkApprovedLoanAPI(loanData, false);
   });
 
-  test("should return error with incomplete form submission", async ({
+  test("should return error with incomplete loan form submission", async ({
     page,
   }) => {
     const loanPromise = page.waitForResponse(loanUrl);
@@ -132,6 +132,7 @@ test.describe("request loan tests", () => {
     await page.goto("/parabank/requestloan.htm");
     await submitLoan(page);
     const loanResponse = await loanPromise;
+    expect(loanResponse.ok()).toBe(false);
     const loanData: ErrorData = await loanResponse.json();
 
     //Check UI for error message
@@ -141,7 +142,6 @@ test.describe("request loan tests", () => {
     );
 
     //Check API response
-    expect(loanResponse.ok()).toBe(false);
     expect(loanData).toHaveProperty("title", "Bad Request");
     expect(loanData).toHaveProperty(
       "detail",

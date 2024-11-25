@@ -1,5 +1,5 @@
 import test, { expect } from "playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData, UserData } from "../../types/global";
 import { createAccount, getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
@@ -13,13 +13,14 @@ test.describe("account overview tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("request should return account overview data", async ({ page }) => {
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
     await login(page, loginInfo.username, loginInfo.password);
     const overviewResponse = await overviewPromise;
+    expect(overviewResponse.ok()).toBe(true);
     const overviewData: AccountData[] = await overviewResponse.json();
 
     for (let i = 0; i < overviewData.length; i++) {
@@ -59,6 +60,7 @@ test.describe("account overview tests", () => {
     await createAccount(page, userData.id, 0, initialAccount.id);
     await login(page, loginInfo.username, loginInfo.password);
     const overviewResponse = await overviewPromise;
+    expect(overviewResponse.ok()).toBe(true);
     const overviewData: AccountData[] = await overviewResponse.json();
 
     //Check each account overview row for correct data

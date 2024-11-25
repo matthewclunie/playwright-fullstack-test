@@ -3,7 +3,7 @@ import {
   generateLoginInfo,
   mockUser,
   mockUserUpdated,
-  setupNewUser,
+  createUser,
 } from "../../fixtures/mockData";
 import { UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
@@ -46,7 +46,7 @@ test.describe("update profile tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should update profile", async ({ page }) => {
@@ -106,6 +106,7 @@ test.describe("update profile tests", () => {
     //Submit form
     await page.getByRole("button", { name: "Update Profile" }).click();
     const updateUserResponse = await updateUserPromise;
+    expect(updateUserResponse.ok()).toBe(true);
     const updateUserData = await updateUserResponse.text();
 
     //Check UI Confirmation
@@ -125,7 +126,6 @@ test.describe("update profile tests", () => {
     }
 
     //Check API Response
-    expect(updateUserResponse.ok()).toBe(true);
     expect(updateUserData).toBe("Successfully updated customer profile");
 
     //Check database was successfully updated

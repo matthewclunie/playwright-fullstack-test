@@ -1,5 +1,5 @@
 import { expect, test } from "playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData, ErrorData, UserData } from "../../types/global";
 import {
   createAccount,
@@ -19,7 +19,7 @@ test.describe("transfer funds tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
     userData = await getUserData(page, loginInfo.username, loginInfo.password);
   });
 
@@ -44,6 +44,7 @@ test.describe("transfer funds tests", () => {
     //Check that all accounts are available for transfer
     await page.goto("/parabank/transfer.htm");
     const accountsResponse = await accountsPromise;
+    expect(accountsResponse.ok()).toBe(true);
     const accountsData: AccountData[] = await accountsResponse.json();
     for (let i = 0; i < accountsData.length; i++) {
       const accountId = accountsData[i].id;
@@ -96,7 +97,7 @@ test.describe("transfer funds tests", () => {
     );
   });
 
-  test("should return error with incomplete form submission @transfer", async ({
+  test("should return error with incomplete transfer form submission ", async ({
     page,
   }) => {
     const transferPromise = page.waitForResponse(transferUrl);
@@ -107,10 +108,10 @@ test.describe("transfer funds tests", () => {
     //Submit incomplete form
     await page.getByRole("button", { name: "Transfer" }).click();
     const transferResponse = await transferPromise;
+    expect(transferResponse.ok()).toBe(false);
     const transferData: ErrorData = await transferResponse.json();
 
     //Check for bad request
-    expect(transferResponse.ok()).toBe(false);
     expect(transferData).toHaveProperty("title", "Bad Request");
     expect(transferData).toHaveProperty(
       "detail",

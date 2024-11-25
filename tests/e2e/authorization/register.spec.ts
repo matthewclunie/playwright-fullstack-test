@@ -3,7 +3,6 @@ import {
   createUser,
   generateLoginInfo,
   mockUser,
-  setupNewUser,
 } from "../../fixtures/mockData";
 import { UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
@@ -17,7 +16,7 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should successfully register user", async () => {

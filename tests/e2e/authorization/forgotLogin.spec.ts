@@ -2,7 +2,7 @@ import { expect, Page, test } from "playwright/test";
 import {
   generateLoginInfo,
   mockUser,
-  setupNewUser,
+  createUser,
 } from "../../fixtures/mockData";
 import { checkHeader } from "../../utils/helpers";
 
@@ -41,14 +41,16 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password, ssn);
+    await createUser(page, loginInfo.username, loginInfo.password, ssn);
   });
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/parabank/lookup.htm");
   });
 
-  test("header and details should be present", async ({ page }) => {
+  test("customer lookup header and details should be present", async ({
+    page,
+  }) => {
     const headerText = {
       title: "Customer Lookup",
       caption:
@@ -117,6 +119,7 @@ test.describe("requires setup user", () => {
 
 test.describe("without setup user", () => {
   test("should return customer not found", async ({ page }) => {
+    const badSSN = "999999999";
     await page.goto("/parabank/lookup.htm");
     const headerText = {
       title: "Error!",
@@ -124,8 +127,7 @@ test.describe("without setup user", () => {
     };
 
     //Fill out and submit find user page
-    await fillFindUserForm(page, "999999999");
-
+    await fillFindUserForm(page, badSSN);
     await checkHeader(page, headerText.title, headerText.caption);
   });
 });

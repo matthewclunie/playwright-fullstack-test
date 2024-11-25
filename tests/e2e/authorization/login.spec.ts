@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import {
   generateLoginInfo,
   mockUser,
-  setupNewUser,
+  createUser,
 } from "../../fixtures/mockData";
 import { checkHeader, login, logout } from "../../utils/helpers";
 
@@ -13,7 +13,7 @@ const loginInfo = generateLoginInfo();
 
 test.describe("login tests", () => {
   test("should successfully log in", async ({ page }) => {
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
     await logout(page);
     await login(page, loginInfo.username, loginInfo.password);
 

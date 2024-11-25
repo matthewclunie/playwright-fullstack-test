@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
 import {
+  createUser,
   generateLoginInfo,
   mockPayee,
-  setupNewUser,
 } from "../../fixtures/mockData";
-import { AccountData, TransactionData } from "../../types/global";
-import { getAccountById, getInitialAccount } from "../../utils/API/accounts";
-import { login, toDollar } from "../../utils/helpers";
+import { TransactionData } from "../../types/global";
 import { getAccountTransactions } from "../../utils/API/transactions";
+import { login, toDollar } from "../../utils/helpers";
 
 const loginInfo = generateLoginInfo();
 
@@ -15,7 +14,7 @@ test.describe("bill payment tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   interface PaymentData {
@@ -57,10 +56,10 @@ test.describe("bill payment tests", () => {
     );
     await page.getByRole("button", { name: "Send Payment" }).click();
     const paymentResponse = await paymentPromise;
+    expect(paymentResponse.ok()).toBe(true);
     const paymentData: PaymentData = await paymentResponse.json();
 
     //Check for successful post
-    expect(paymentResponse.ok()).toBe(true);
     expect(paymentData).toHaveProperty("accountId", Number(fromAccountId));
     expect(paymentData).toHaveProperty("amount", Number(paymentAmount));
     expect(paymentData).toHaveProperty("payeeName", mockPayee.name);

@@ -1,5 +1,5 @@
 import { expect, Page, test } from "playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
 import { login } from "../../utils/helpers";
@@ -54,7 +54,7 @@ test.describe("open new account tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should open checking account", async ({ page }) => {
@@ -70,6 +70,7 @@ test.describe("open new account tests", () => {
     //Wait for select options to load, create account
     await createAccount(page, "CHECKING");
     const createAccountResponse = await createAccountPromise;
+    expect(createAccountResponse.ok()).toBe(true);
     const createAccountData: AccountData = await createAccountResponse.json();
 
     //Check UI for account creation confirmation
@@ -97,6 +98,7 @@ test.describe("open new account tests", () => {
     //Wait for select options to load, create account
     await createAccount(page, "SAVINGS");
     const createAccountResponse = await createAccountPromise;
+    expect(createAccountResponse.ok()).toBe(true);
     const createAccountData: AccountData = await createAccountResponse.json();
 
     //Check UI for account creation confirmation

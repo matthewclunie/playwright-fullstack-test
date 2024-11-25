@@ -1,11 +1,11 @@
-//Create utility functions in the /utils directory for common actions (e.g., logging in, filling forms).
-//This keeps your tests DRY (Don't Repeat Yourself).
-
-//Helpers are usually focused on performing actions, such as filling out forms,
-//clicking buttons, or navigating through the UI.
-
 import { Page } from "playwright";
 import { expect } from "playwright/test";
+import { baseURL } from "../../playwright.config";
+
+// interface Appendage {
+//   param: string;
+//   value: any;
+// }
 
 export const login = async (page: Page, userName: string, password: string) => {
   await page.goto("/parabank/index.htm");
@@ -29,34 +29,6 @@ export const checkHeader = async (
   );
 };
 
-export const setDataAccessMode = async (
-  page: Page,
-  type: "SOAP" | "XML" | "JSON" | "JDBC"
-) => {
-  await page.goto("/parabank/admin.htm");
-  let selector: string;
-
-  switch (true) {
-    case type === "SOAP":
-      selector = "#accessMode1";
-      break;
-    case type === "XML":
-      selector = "#accessMode2";
-      break;
-    case type === "JSON":
-      selector = "#accessMode3";
-      break;
-    case type === "JDBC":
-      selector = "#accessMode4";
-      break;
-    default:
-      selector = "#accessMode3";
-  }
-
-  await page.locator(selector).click();
-  await page.getByRole("button", { name: "Submit" }).click();
-};
-
 export const toDollar = (amount: number) => {
   return "$" + amount.toFixed(2);
 };
@@ -69,3 +41,14 @@ export const toFormattedDate = (timestamp: number) => {
 
   return `${month}-${day}-${year}`;
 };
+
+// export const getParams = (route: string, appends: Appendage[]) => {
+//   const url = new URL(route, baseURL);
+//   const params = new URLSearchParams();
+
+//   for (const { param, value } of appends) {
+//     params.append(param, value);
+//   }
+
+//   return url.toString();
+// };

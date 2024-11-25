@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
 
 const loginInfo = generateLoginInfo();
@@ -8,7 +8,7 @@ test.describe("logout tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   test("should successfully log out", async ({ page }) => {

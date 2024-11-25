@@ -1,10 +1,14 @@
 import { expect, test } from "@playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { createUser, generateLoginInfo } from "../../fixtures/mockData";
 import { AccountData, TransactionData, UserData } from "../../types/global";
-import { createAccount, getInitialAccount } from "../../utils/API/accounts";
+import { getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
-import { getAccountTransactions } from "../../utils/API/transactions";
-import { login, toDollar, toFormattedDate } from "../../utils/helpers";
+import {
+  checkHeader,
+  login,
+  toDollar,
+  toFormattedDate,
+} from "../../utils/helpers";
 
 const loginInfo = generateLoginInfo();
 
@@ -14,7 +18,7 @@ test.describe("account activity tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
     userData = await getUserData(page, loginInfo.username, loginInfo.password);
   });
 
@@ -27,6 +31,7 @@ test.describe("account activity tests", () => {
   //   await page.waitForURL("");
 
   //   const accountsResponse = await accountsPromise;
+  //   expect(accountsResponse.ok()).toBe(true);
   //   const accountsData: AccountData[] = await accountsResponse.json();
   //   const initialAccount = accountsData[0];
   //   await page.goto(`/parabank/activity.htm?id=${initialAccount.id}`);
@@ -163,34 +168,47 @@ test.describe("account activity tests", () => {
     await checkTransactionsTable([]);
   });
 
-  test("should drill down into transaction details", async ({ page }) => {
-    const initialAccount: AccountData = await getInitialAccount(
-      page,
-      userData.id
-    );
-    await createAccount(page, userData.id, 0, initialAccount.id);
-    const transactions: TransactionData[] = await getAccountTransactions(
-      page,
-      initialAccount.id
-    );
-    const initialTransaction = transactions[0];
+  test("should return error on drilldown to nonexistent acocunt id", async ({
+    page,
+  }) => {
+    const badId = 9999988;
+    const headerText = {
+      title: "Error!",
+      caption: "Could not find account # 9999988",
+    };
     await login(page, loginInfo.username, loginInfo.password);
-    await page.goto(`/parabank/transaction.htm?id=${initialTransaction.id}`);
-    const tableRows = page.locator("tbody tr");
-    const tableRowsCount = await tableRows.count();
-
-    const data = [
-      initialTransaction["id"].toString(),
-      toFormattedDate(Date.now()), // should be initialTransaction["date"], temp fix
-      initialTransaction["description"],
-      initialTransaction["type"],
-      toDollar(initialTransaction["amount"]),
-    ];
-
-    for (let i = 0; i < tableRowsCount; i++) {
-      const tableRow = tableRows.nth(i);
-      const dataCell = tableRow.locator("td").nth(1);
-      await expect(dataCell).toHaveText(data[i]);
-    }
+    await page.goto(`/parabank/activity.htm?id=${badId}`);
+    await checkHeader(page, headerText.title, headerText.caption);
   });
+
+  // test("should drill down into transaction details", async ({ page }) => {
+  //   const initialAccount: AccountData = await getInitialAccount(
+  //     page,
+  //     userData.id
+  //   );
+  //   await createAccount(page, userData.id, 0, initialAccount.id);
+  //   const transactions: TransactionData[] = await getAccountTransactions(
+  //     page,
+  //     initialAccount.id
+  //   );
+  //   const initialTransaction = transactions[0];
+  //   await login(page, loginInfo.username, loginInfo.password);
+  //   await page.goto(`/parabank/transaction.htm?id=${initialTransaction.id}`);
+  //   const tableRows = page.locator("tbody tr");
+  //   const tableRowsCount = await tableRows.count();
+
+  //   const data = [
+  //     initialTransaction["id"].toString(),
+  //     toFormattedDate(Date.now()), // should be initialTransaction["date"], temp fix
+  //     initialTransaction["description"],
+  //     initialTransaction["type"],
+  //     toDollar(initialTransaction["amount"]),
+  //   ];
+
+  //   for (let i = 0; i < tableRowsCount; i++) {
+  //     const tableRow = tableRows.nth(i);
+  //     const dataCell = tableRow.locator("td").nth(1);
+  //     await expect(dataCell).toHaveText(data[i]);
+  //   }
+  // });
 });

@@ -1,5 +1,5 @@
 import { expect, Locator, test } from "@playwright/test";
-import { generateLoginInfo, setupNewUser } from "../../fixtures/mockData";
+import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { TransactionData } from "../../types/global";
 import { login, toDollar, toFormattedDate } from "../../utils/helpers";
 
@@ -31,7 +31,7 @@ test.describe("find transaction tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await setupNewUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, loginInfo.username, loginInfo.password);
   });
 
   // test("should find transaction by id", async ({ page }) => {
@@ -101,8 +101,9 @@ test.describe("find transaction tests", () => {
   //     return await res.json();
   //   }, `http://localhost:8080/parabank/services/bank/transactions/${transaction.id}`);
   //   await page.locator("#findById").click();
-  //   // const transResponse = await transactionPromise;
-  //   // const transactionData: TransactionData = await transResponse.json();
+  //   const transResponse = await transactionPromise;
+  //   expect(transResponse.ok()).toBe(true);
+  //   const transactionData: TransactionData = await transResponse.json();
 
   //   await page.pause();
   //   await page.pause();
