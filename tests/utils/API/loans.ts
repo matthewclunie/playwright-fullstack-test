@@ -1,4 +1,5 @@
 import { Page } from "playwright";
+import { getURL } from "../helpers";
 
 export const requestLoan = async (
   page: Page,
@@ -7,7 +8,11 @@ export const requestLoan = async (
   downPayment: number,
   fromAccountId: number
 ) => {
-  await page.request.post(
-    `/parabank/services/bank/requestLoan?customerId=${customerId}&amount=${amount}&downPayment=${downPayment}&fromAccountId=${fromAccountId}`
-  );
+  const url = getURL("/parabank/services/bank/requestLoan", {
+    customerId,
+    amount,
+    downPayment,
+    fromAccountId,
+  });
+  await page.request.post(url);
 };

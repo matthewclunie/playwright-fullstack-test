@@ -63,7 +63,7 @@ export const getTransactionsByDateRange = async (
     accept: "application/json",
   };
   const response = await page.request.get(
-    `/parabank/services/bank/accounts/${accountId}/transactions/${fromDate}/hgf/toDate/${toDate}`,
+    `/parabank/services/bank/accounts/${accountId}/transactions/${fromDate}/toDate/${toDate}`,
     { headers }
   );
   return await response.json();

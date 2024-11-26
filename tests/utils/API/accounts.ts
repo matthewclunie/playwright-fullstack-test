@@ -1,5 +1,6 @@
 import { Page } from "playwright";
 import { AccountData } from "../../types/global";
+import { getURL } from "../helpers";
 
 export const billPay = async (
   page: Page,
@@ -9,25 +10,32 @@ export const billPay = async (
   const headers = {
     accept: "application/json",
   };
-  await page.request.post(
-    `/parabank/services/bank/billpay?accountId=${accountId}&amount=${amount}`,
-    { headers }
-  );
+
+  const url = getURL("/parabank/services/bank/billpay", {
+    accountId,
+    amount,
+  });
+
+  await page.request.post(url, { headers });
 };
 
 export const createAccount = async (
   page: Page,
   customerId: number,
-  accountType: 0 | 1 | 2,
-  accountId: number
+  newAccountType: 0 | 1 | 2,
+  fromAccountId: number
 ) => {
   const headers = {
     accept: "application/json",
   };
-  const response = await page.request.post(
-    `/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${accountType}&fromAccountId=${accountId}`,
-    { headers }
-  );
+  const url = getURL("/parabank/services/bank/createAccount", {
+    customerId,
+    newAccountType,
+    fromAccountId,
+  });
+  const otherURL = `/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${newAccountType}&fromAccountId=${fromAccountId}`;
+  const response = await page.request.post(otherURL, { headers });
+  console.log(await response.text());
 
   return await response.json();
 };
@@ -40,16 +48,18 @@ export const depositFunds = async (
   const headers = {
     accept: "application/json",
   };
-  await page.request.post(
-    `/parabank/services/bank/deposit?accountId=${accountId}&amount=${amount}`,
-    { headers }
-  );
+  const url = getURL("/parabank/services/bank/deposit", {
+    accountId,
+    amount,
+  });
+  await page.request.post(url, { headers });
 };
 
 export const getAccountById = async (page: Page, accountId: number) => {
   const headers = {
     accept: "application/json",
   };
+
   const response = await page.request.get(
     `/parabank/services_proxy/bank/accounts/${accountId}`,
     { headers }
@@ -77,10 +87,12 @@ export const transferFunds = async (
   const headers = {
     accept: "application/json",
   };
-  await page.request.post(
-    `/parabank/services/bank/transfer?fromAccountId=${fromAccountId}&toAccountId=${toAccountId}&amount=${amount}`,
-    { headers }
-  );
+  const url = getURL("/parabank/services/bank/transfer", {
+    fromAccountId,
+    toAccountId,
+    amount,
+  });
+  await page.request.post(url, { headers });
 };
 
 export const withdrawFunds = async (
@@ -91,10 +103,11 @@ export const withdrawFunds = async (
   const headers = {
     accept: "application/json",
   };
-  await page.request.post(
-    `/parabank/services/bank/withdraw?accountId=${accountId}&amount=${amount}`,
-    { headers }
-  );
+  const url = getURL("/parabank/services/bank/withdraw", {
+    accountId,
+    amount,
+  });
+  await page.request.post(url, { headers });
 };
 
 export const getInitialAccount = async (page: Page, customerId: number) => {

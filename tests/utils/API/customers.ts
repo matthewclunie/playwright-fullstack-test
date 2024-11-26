@@ -1,4 +1,5 @@
 import { Page } from "playwright";
+import { getURL } from "../helpers";
 
 export const getCustomerDetails = async (page: Page, customerId: number) => {
   const headers = {
@@ -28,8 +29,17 @@ export const updateCustomerInfo = async (
   const headers = {
     accept: "application/json",
   };
-  await page.request.post(
-    `/parabank/services/bank/customers/update/${customerId}?firstName=${firstName}&lastName=${lastName}&street=${street}&city=${city}&state=${state}&zipCode=${zip}&phoneNumber=${phoneNumber}&ssn=${ssn}&username=${username}&password=${password}`,
-    { headers }
-  );
+  const url = getURL(`/parabank/services/bank/customers/update/${customerId}`, {
+    firstName,
+    lastName,
+    street,
+    city,
+    state,
+    zip,
+    phoneNumber,
+    ssn,
+    username,
+    password,
+  });
+  await page.request.post(url, { headers });
 };

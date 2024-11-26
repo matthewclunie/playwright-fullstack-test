@@ -2,10 +2,9 @@ import { Page } from "playwright";
 import { expect } from "playwright/test";
 import { baseURL } from "../../playwright.config";
 
-// interface Appendage {
-//   param: string;
-//   value: any;
-// }
+interface Params {
+  [args: string]: string | number;
+}
 
 export const login = async (page: Page, userName: string, password: string) => {
   await page.goto("/parabank/index.htm");
@@ -42,13 +41,13 @@ export const toFormattedDate = (timestamp: number) => {
   return `${month}-${day}-${year}`;
 };
 
-// export const getParams = (route: string, appends: Appendage[]) => {
-//   const url = new URL(route, baseURL);
-//   const params = new URLSearchParams();
+export const getURL = (route: string, paramArgs: Params) => {
+  const url = new URL(route, baseURL);
+  const params = new URLSearchParams();
 
-//   for (const { param, value } of appends) {
-//     params.append(param, value);
-//   }
-
-//   return url.toString();
-// };
+  for (const [key, value] of Object.entries(paramArgs)) {
+    console.log(key, value);
+    params.append(key, value.toString());
+  }
+  return url.toString();
+};

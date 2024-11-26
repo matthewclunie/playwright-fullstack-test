@@ -1,4 +1,5 @@
 import { Page } from "playwright";
+import { getURL } from "../helpers";
 
 export const buyPosition = async (
   page: Page,
@@ -9,9 +10,17 @@ export const buyPosition = async (
   shares: number,
   pricePerShare: number
 ) => {
-  await page.request.post(
-    `/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
+  const url = getURL(
+    `/parabank/services/bank/customers/${customerId}/buyPosition`,
+    {
+      accountId,
+      name,
+      symbol,
+      shares,
+      pricePerShare,
+    }
   );
+  await page.request.post(url);
 };
 
 export const getPositionById = async (
@@ -23,9 +32,20 @@ export const getPositionById = async (
   shares: number,
   pricePerShare: number
 ) => {
-  const response = await page.request.get(
-    `/parabank/services/bank/customers/${customerId}/buyPosition?accountId=${accountId}&name=${name}&symbol=${symbol}&shares=${shares}&pricePerShare=${pricePerShare}`
+  const headers = {
+    accept: "application/json",
+  };
+  const url = getURL(
+    `/parabank/services/bank/customers/${customerId}/buyPosition`,
+    {
+      accountId,
+      name,
+      symbol,
+      shares,
+      pricePerShare,
+    }
   );
+  const response = await page.request.get(url, { headers });
   return await response.json();
 };
 
@@ -35,8 +55,12 @@ export const getPositionHistory = async (
   startDate: string,
   endDate: string
 ) => {
+  const headers = {
+    accept: "application/json",
+  };
   const response = await page.request.get(
-    `/parabank/services/bank/positions/${positionId}/${startDate}/${endDate}`
+    `/parabank/services/bank/positions/${positionId}/${startDate}/${endDate}`,
+    { headers }
   );
   return await response.json();
 };
@@ -60,7 +84,14 @@ export const sellPosition = async (
   shares: number,
   pricePerShare: number
 ) => {
-  await page.request.post(
-    `/parabank/services/bank/customers/${customerId}/sellPosition?accountId=${accountId}&positionId=${positionId}&shares=${shares}&pricePerShare=${pricePerShare}`
+  const url = getURL(
+    `/parabank/services/bank/customers/${customerId}/sellPosition`,
+    {
+      accountId,
+      positionId,
+      shares,
+      pricePerShare,
+    }
   );
+  await page.request.post(url);
 };
