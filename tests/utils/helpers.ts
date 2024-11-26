@@ -43,11 +43,9 @@ export const toFormattedDate = (timestamp: number) => {
 
 export const getURL = (route: string, paramArgs: Params) => {
   const url = new URL(route, baseURL);
-  const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(paramArgs)) {
-    console.log(key, value);
-    params.append(key, value.toString());
+    url.searchParams.append(key, value.toString());
   }
   return url.toString();
 };

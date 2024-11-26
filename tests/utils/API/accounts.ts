@@ -33,10 +33,8 @@ export const createAccount = async (
     newAccountType,
     fromAccountId,
   });
-  const otherURL = `/parabank/services/bank/createAccount?customerId=${customerId}&newAccountType=${newAccountType}&fromAccountId=${fromAccountId}`;
-  const response = await page.request.post(otherURL, { headers });
-  console.log(await response.text());
 
+  const response = await page.request.post(url, { headers });
   return await response.json();
 };
 
