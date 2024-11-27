@@ -1,24 +1,28 @@
-import test, { expect } from "playwright/test";
+import { test, expect } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData, UserData } from "../../types/global";
 import { createAccount, getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
 import { login, toDollar } from "../../utils/helpers";
 
-const loginInfo = generateLoginInfo();
+// const loginInfo = generateLoginInfo();
 
 test.describe("account overview tests", () => {
   const accountOverviewRoute = `/parabank/services_proxy/bank/customers/*/accounts`;
 
-  test.beforeAll("setup", async ({ browser }) => {
+  test.beforeAll("setup", async ({ browser, username, password }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
   });
 
-  test("request should return account overview data", async ({ page }) => {
+  test("request should return account overview data", async ({
+    page,
+    username,
+    password,
+  }) => {
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     const overviewResponse = await overviewPromise;
     expect(overviewResponse.ok()).toBe(true);
     const overviewData: AccountData[] = await overviewResponse.json();
@@ -46,19 +50,15 @@ test.describe("account overview tests", () => {
     }
   });
 
-  test("should show overview data", async ({ page }) => {
+  test("should show overview data", async ({ page, username, password }) => {
     const overviewPromise = page.waitForResponse(accountOverviewRoute);
-    const userData: UserData = await getUserData(
-      page,
-      loginInfo.username,
-      loginInfo.password
-    );
+    const userData: UserData = await getUserData(page, username, password);
 
     //Set up multiple accounts to display in overview
     const initialAccount = await getInitialAccount(page, userData.id);
     await createAccount(page, userData.id, 0, initialAccount.id);
     await createAccount(page, userData.id, 0, initialAccount.id);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     const overviewResponse = await overviewPromise;
     expect(overviewResponse.ok()).toBe(true);
     const overviewData: AccountData[] = await overviewResponse.json();

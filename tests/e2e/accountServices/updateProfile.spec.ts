@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/fixtures";
 import {
   generateLoginInfo,
   mockUser,
@@ -46,7 +46,7 @@ test.describe("update profile tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
   });
 
   test("should update profile", async ({ page }) => {
@@ -89,7 +89,7 @@ test.describe("update profile tests", () => {
       caption:
         "Your updated address and phone number have been added to the system.",
     };
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/updateprofile.htm");
     await page.waitForLoadState("networkidle");
 
@@ -129,11 +129,7 @@ test.describe("update profile tests", () => {
     expect(updateUserData).toBe("Successfully updated customer profile");
 
     //Check database was successfully updated
-    const userData: UserData = await getUserData(
-      page,
-      loginInfo.username,
-      loginInfo.password
-    );
+    const userData: UserData = await getUserData(page, username, password);
 
     expect(userData.lastName).toBe(mockUserUpdated.lastName);
   });
@@ -166,7 +162,7 @@ test.describe("update profile tests", () => {
       },
     ];
 
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/updateprofile.htm");
 
     //Clear form of placeholders, submit empty form

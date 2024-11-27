@@ -1,9 +1,8 @@
-import { expect, Locator, test } from "@playwright/test";
+// import {  Locator } from "@playwright/test";
+import { expect, test, Locator } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { TransactionData } from "../../types/global";
 import { login, toDollar, toFormattedDate } from "../../utils/helpers";
-
-const loginInfo = generateLoginInfo();
 
 test.describe("find transaction tests", () => {
   const transactionResultsCheck = async (
@@ -27,12 +26,6 @@ test.describe("find transaction tests", () => {
       await expect(type === "Debit" ? creditCell : debitCell).toBeEmpty();
     }
   };
-
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
-  });
 
   // test("should find transaction by id", async ({ page }) => {
   //   const userData: UserData = await getUserData(
@@ -109,7 +102,11 @@ test.describe("find transaction tests", () => {
   //   await page.pause();
   // });
 
-  test("should find transaction by date", async ({ page }) => {
+  test("should find transaction by date", async ({
+    page,
+    username,
+    password,
+  }) => {
     const transactionData: TransactionData[] = [
       {
         id: 88888,
@@ -128,7 +125,7 @@ test.describe("find transaction tests", () => {
         description: "Funds Transfer Received",
       },
     ];
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
 
     //intercept request to mock it
     page.route(
@@ -158,7 +155,11 @@ test.describe("find transaction tests", () => {
     );
   });
 
-  test("should find transaction by date range", async ({ page }) => {
+  test("should find transaction by date range", async ({
+    page,
+    username,
+    password,
+  }) => {
     const transactionData = [
       {
         id: 77777,
@@ -189,7 +190,7 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/findtrans.htm");
 
     //submit search
@@ -239,8 +240,6 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-
-    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("https://parabank.parasoft.com/parabank/findtrans.htm");
 
     //submit search
@@ -281,7 +280,6 @@ test.describe("find transaction tests", () => {
         errorText: "Invalid amount",
       },
     ];
-    await login(page, loginInfo.username, loginInfo.password);
     await page.goto("/parabank/findtrans.htm");
 
     //check each search for errors

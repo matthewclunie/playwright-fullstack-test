@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/fixtures";
 import { createUser, generateLoginInfo } from "../../fixtures/mockData";
 import { AccountData, TransactionData, UserData } from "../../types/global";
 import { getInitialAccount } from "../../utils/API/accounts";
@@ -10,16 +10,13 @@ import {
   toFormattedDate,
 } from "../../utils/helpers";
 
-const loginInfo = generateLoginInfo();
+// const loginInfo = generateLoginInfo();
 
 test.describe("account activity tests", () => {
   let userData: UserData;
 
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
-    userData = await getUserData(page, loginInfo.username, loginInfo.password);
+  test.beforeAll("setup", async ({ page, username, password }) => {
+    userData = await getUserData(page, username, password);
   });
 
   // test("should display account activity details", async ({ page }) => {
@@ -27,7 +24,7 @@ test.describe("account activity tests", () => {
   //   const accountsPromise = page.waitForResponse((response) => {
   //     return response.ok() && response.url().includes(accountsUrl);
   //   });
-  //   await login(page, loginInfo.username, loginInfo.password);
+  //   await login(page, username, password);
   //   await page.waitForURL("");
 
   //   const accountsResponse = await accountsPromise;
@@ -49,7 +46,11 @@ test.describe("account activity tests", () => {
   //   );
   // });
 
-  test("should sort by activity period", async ({ page }) => {
+  test("should sort by activity period", async ({
+    page,
+    username,
+    password,
+  }) => {
     const initialAccount: AccountData = await getInitialAccount(
       page,
       userData.id
@@ -120,7 +121,7 @@ test.describe("account activity tests", () => {
 
     await sortRoute(activityPageRoute, mockBody);
 
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto(`/parabank/activity.htm?id=${initialAccount.id}`);
 
     await checkTransactionsTable(mockBody);
@@ -170,13 +171,15 @@ test.describe("account activity tests", () => {
 
   test("should return error on drilldown to nonexistent acocunt id", async ({
     page,
+    username,
+    password,
   }) => {
     const badId = 9999988;
     const headerText = {
       title: "Error!",
       caption: "Could not find account # 9999988",
     };
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto(`/parabank/activity.htm?id=${badId}`);
     await checkHeader(page, headerText.title, headerText.caption);
   });
@@ -192,7 +195,7 @@ test.describe("account activity tests", () => {
   //     initialAccount.id
   //   );
   //   const initialTransaction = transactions[0];
-  //   await login(page, loginInfo.username, loginInfo.password);
+  //   await login(page, username, password);
   //   await page.goto(`/parabank/transaction.htm?id=${initialTransaction.id}`);
   //   const tableRows = page.locator("tbody tr");
   //   const tableRowsCount = await tableRows.count();

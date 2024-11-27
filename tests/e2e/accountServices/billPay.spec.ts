@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/fixtures";
 import {
   createUser,
   generateLoginInfo,
@@ -6,15 +6,11 @@ import {
 } from "../../fixtures/mockData";
 import { TransactionData } from "../../types/global";
 import { getAccountTransactions } from "../../utils/API/transactions";
-import { login, toDollar } from "../../utils/helpers";
-
-const loginInfo = generateLoginInfo();
+import { toDollar } from "../../utils/helpers";
 
 test.describe("bill payment tests", () => {
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/parabank/billpay.htm");
   });
 
   interface PaymentData {
@@ -25,8 +21,6 @@ test.describe("bill payment tests", () => {
 
   test("should submit bill payment", async ({ page }) => {
     const paymentAmount = "50";
-    await login(page, loginInfo.username, loginInfo.password);
-    await page.goto("/parabank/billpay.htm");
 
     const formRows = [
       { selector: '[name="payee.name"]', info: mockPayee.name },
@@ -92,9 +86,6 @@ test.describe("bill payment tests", () => {
   });
 
   test("should get bill form validation errors", async ({ page }) => {
-    await login(page, loginInfo.username, loginInfo.password);
-    await page.goto("/parabank/billpay.htm");
-
     //Submit empty form
     await page.getByRole("button", { name: "Send Payment" }).click();
 

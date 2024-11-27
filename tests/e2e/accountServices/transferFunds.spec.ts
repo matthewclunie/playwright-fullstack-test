@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData, ErrorData, UserData } from "../../types/global";
 import {
@@ -19,8 +19,8 @@ test.describe("transfer funds tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
-    userData = await getUserData(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
+    userData = await getUserData(page, username, password);
   });
 
   test("should transfer funds", async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe("transfer funds tests", () => {
     );
     await createAccount(page, initialAccount.customerId, 0, initialAccount.id);
     await createAccount(page, initialAccount.customerId, 0, initialAccount.id);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
 
     //Check that all accounts are available for transfer
     await page.goto("/parabank/transfer.htm");
@@ -101,7 +101,7 @@ test.describe("transfer funds tests", () => {
     page,
   }) => {
     const transferPromise = page.waitForResponse(transferUrl);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/transfer.htm");
     await page.waitForLoadState("networkidle");
 

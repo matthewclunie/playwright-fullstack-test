@@ -1,7 +1,4 @@
-//Spec Files: Each spec file should focus on a particular aspect of the feature
-//(e.g., login.spec.ts tests various scenarios for user login).
-
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../fixtures/fixtures";
 import {
   generateLoginInfo,
   mockUser,
@@ -13,9 +10,10 @@ const loginInfo = generateLoginInfo();
 
 test.describe("login tests", () => {
   test("should successfully log in", async ({ page }) => {
-    await createUser(page, loginInfo.username, loginInfo.password);
+    test.use({ storageState: { cookies: [], origins: [] } });
+    await createUser(page, username, password);
     await logout(page);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
 
     // Verify login with UI
     await expect(page).toHaveURL("/parabank/overview.htm");
@@ -32,6 +30,7 @@ test.describe("login tests", () => {
       title: "Error!",
       caption: "Please enter a username and password.",
     };
+    test.use({ storageState: { cookies: [], origins: [] } });
     await page.goto("/parabank/index.htm");
     await page.getByRole("button", { name: "Log In" }).click();
     await checkHeader(page, headerText.title, headerText.caption);
@@ -42,6 +41,7 @@ test.describe("login tests", () => {
       title: "Error!",
       caption: "The username and password could not be verified.",
     };
+    test.use({ storageState: { cookies: [], origins: [] } });
     await login(page, "missingUser", "wrongPassword");
     await checkHeader(page, headerText.title, headerText.caption);
   });

@@ -1,4 +1,5 @@
 import { Page } from "playwright";
+import { baseURL } from "../../playwright.config";
 
 export const mockUser = {
   firstName: "Guy",
@@ -84,7 +85,7 @@ export const createUser = async (
     },
   ];
 
-  await page.goto("/parabank/register.htm");
+  await page.goto(`${baseURL}/parabank/register.htm`);
 
   for (const { locator, info } of formRows) {
     await page.fill(locator, info);

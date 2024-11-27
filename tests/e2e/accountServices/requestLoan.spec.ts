@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page, test } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { ErrorData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
@@ -79,12 +79,12 @@ test.describe("request loan tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
   });
 
   test("should approve loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be approved
@@ -106,7 +106,7 @@ test.describe("request loan tests", () => {
 
   test("should deny loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be denied
@@ -126,7 +126,7 @@ test.describe("request loan tests", () => {
     page,
   }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
 
     //Submit incomplete form
     await page.goto("/parabank/requestloan.htm");

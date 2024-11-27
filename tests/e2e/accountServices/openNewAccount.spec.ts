@@ -1,4 +1,4 @@
-import { expect, Page, test } from "playwright/test";
+import { expect, Page, test } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { AccountData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
@@ -54,7 +54,7 @@ test.describe("open new account tests", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
   });
 
   test("should open checking account", async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe("open new account tests", () => {
     };
 
     const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/openaccount.htm");
 
     //Wait for select options to load, create account
@@ -92,7 +92,7 @@ test.describe("open new account tests", () => {
     };
 
     const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, loginInfo.username, loginInfo.password);
+    await login(page, username, password);
     await page.goto("/parabank/openaccount.htm");
 
     //Wait for select options to load, create account

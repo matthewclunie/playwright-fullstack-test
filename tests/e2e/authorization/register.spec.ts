@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page, test } from "../../fixtures/fixtures";
 import {
   createUser,
   generateLoginInfo,
@@ -16,25 +16,17 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
   });
 
   test("should successfully register user", async () => {
     //UI check for new user
     const successfulAccountText =
       "Your account was created successfully. You are now logged in.";
-    await checkHeader(
-      page,
-      `Welcome ${loginInfo.username}`,
-      successfulAccountText
-    );
+    await checkHeader(page, `Welcome ${username}`, successfulAccountText);
 
     //API check for new user
-    const userData: UserData = await getUserData(
-      page,
-      loginInfo.username,
-      loginInfo.password
-    );
+    const userData: UserData = await getUserData(page, username, password);
     const firstNameData = userData.firstName;
     const lastNameData = userData.lastName;
     expect(firstNameData).toEqual(`${mockUser.firstName}`);
@@ -42,7 +34,7 @@ test.describe("requires setup user", () => {
   });
 
   test("should return username exists error", async () => {
-    await createUser(page, loginInfo.username, loginInfo.password);
+    await createUser(page, username, password);
     await expect(page.locator("#customer\\.username\\.errors")).toHaveText(
       "This username already exists."
     );
@@ -50,6 +42,7 @@ test.describe("requires setup user", () => {
 });
 
 test.describe("without setup user", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
   test("registration header and details should be present", async ({
     page,
   }) => {

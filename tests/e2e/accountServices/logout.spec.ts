@@ -1,18 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, Locator } from "../../fixtures/fixtures";
 import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { login, logout } from "../../utils/helpers";
 
-const loginInfo = generateLoginInfo();
-
 test.describe("logout tests", () => {
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password);
-  });
-
   test("should successfully log out", async ({ page }) => {
-    await login(page, loginInfo.username, loginInfo.password);
+    await page.goto("/parabank/index.htm");
     await logout(page);
 
     // Verify log out with UI

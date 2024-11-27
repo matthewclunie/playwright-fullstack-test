@@ -1,4 +1,4 @@
-import { expect, Page, test } from "playwright/test";
+import { expect, Page, test } from "../../fixtures/fixtures";
 import {
   generateLoginInfo,
   mockUser,
@@ -41,7 +41,7 @@ test.describe("requires setup user", () => {
   test.beforeAll("setup", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await createUser(page, loginInfo.username, loginInfo.password, ssn);
+    await createUser(page, username, password, ssn);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -73,7 +73,7 @@ test.describe("requires setup user", () => {
     //Expect info recovery confirmation message
     await checkHeader(page, headerText.title, headerText.caption);
     await expect(page.locator("#rightPanel p").last()).toHaveText(
-      `Username: ${loginInfo.username} Password: ${loginInfo.password}`
+      `Username: ${username} Password: ${password}`
     );
   });
 
@@ -118,6 +118,7 @@ test.describe("requires setup user", () => {
 });
 
 test.describe("without setup user", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
   test("should return customer not found", async ({ page }) => {
     const badSSN = "999999999";
     await page.goto("/parabank/lookup.htm");
