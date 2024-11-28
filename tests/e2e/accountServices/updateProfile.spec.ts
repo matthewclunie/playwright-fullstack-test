@@ -1,15 +1,7 @@
 import { expect, test } from "../../fixtures/fixtures";
-import {
-  generateLoginInfo,
-  mockUser,
-  mockUserUpdated,
-  createUser,
-} from "../../fixtures/mockData";
+import { mockUser, mockUserUpdated } from "../../fixtures/mockData";
 import { UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
-import { login } from "../../utils/helpers";
-
-const loginInfo = generateLoginInfo();
 
 test.describe("update profile tests", () => {
   const formRows = [
@@ -43,13 +35,7 @@ test.describe("update profile tests", () => {
     },
   ];
 
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, username, password);
-  });
-
-  test("should update profile", async ({ page }) => {
+  test("should update profile", async ({ page, username, password }) => {
     const formRowsUpdated = [
       {
         selector: "#customer\\.firstName",
@@ -89,7 +75,6 @@ test.describe("update profile tests", () => {
       caption:
         "Your updated address and phone number have been added to the system.",
     };
-    await login(page, username, password);
     await page.goto("/parabank/updateprofile.htm");
     await page.waitForLoadState("networkidle");
 
@@ -162,7 +147,6 @@ test.describe("update profile tests", () => {
       },
     ];
 
-    await login(page, username, password);
     await page.goto("/parabank/updateprofile.htm");
 
     //Clear form of placeholders, submit empty form

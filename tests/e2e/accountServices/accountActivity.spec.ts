@@ -1,24 +1,10 @@
 import { expect, test } from "../../fixtures/fixtures";
-import { createUser, generateLoginInfo } from "../../fixtures/mockData";
 import { AccountData, TransactionData, UserData } from "../../types/global";
 import { getInitialAccount } from "../../utils/API/accounts";
 import { getUserData } from "../../utils/API/misc";
-import {
-  checkHeader,
-  login,
-  toDollar,
-  toFormattedDate,
-} from "../../utils/helpers";
-
-// const loginInfo = generateLoginInfo();
+import { checkHeader, toDollar, toFormattedDate } from "../../utils/helpers";
 
 test.describe("account activity tests", () => {
-  let userData: UserData;
-
-  test.beforeAll("setup", async ({ page, username, password }) => {
-    userData = await getUserData(page, username, password);
-  });
-
   // test("should display account activity details", async ({ page }) => {
   //   const accountsUrl = `/parabank/services_proxy/bank/customers/*/accounts`;
   //   const accountsPromise = page.waitForResponse((response) => {
@@ -51,6 +37,7 @@ test.describe("account activity tests", () => {
     username,
     password,
   }) => {
+    const userData = await getUserData(page, username, password);
     const initialAccount: AccountData = await getInitialAccount(
       page,
       userData.id
@@ -120,8 +107,6 @@ test.describe("account activity tests", () => {
     };
 
     await sortRoute(activityPageRoute, mockBody);
-
-    await login(page, username, password);
     await page.goto(`/parabank/activity.htm?id=${initialAccount.id}`);
 
     await checkTransactionsTable(mockBody);
@@ -171,15 +156,12 @@ test.describe("account activity tests", () => {
 
   test("should return error on drilldown to nonexistent acocunt id", async ({
     page,
-    username,
-    password,
   }) => {
     const badId = 9999988;
     const headerText = {
       title: "Error!",
-      caption: "Could not find account # 9999988",
+      caption: "An internal error has occurred and has been logged.",
     };
-    await login(page, username, password);
     await page.goto(`/parabank/activity.htm?id=${badId}`);
     await checkHeader(page, headerText.title, headerText.caption);
   });

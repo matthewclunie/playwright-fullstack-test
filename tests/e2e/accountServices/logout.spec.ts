@@ -4,7 +4,7 @@ import { login, logout } from "../../utils/helpers";
 
 test.describe("logout tests", () => {
   test("should successfully log out", async ({ page }) => {
-    await page.goto("/parabank/index.htm");
+    await page.goto("/parabank/overview.htm");
     await logout(page);
 
     // Verify log out with UI

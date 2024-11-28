@@ -46,11 +46,11 @@ export const test = baseTest.extend<{}, Fixtures>({
 
       // Wait until the page receives the cookies.
       // You can wait until the page reaches a state where all cookies are set.
-      await expect(page.locator('[href="logout.htm"]')).toBeVisible();
+      // await page.locator('[href="logout.htm"]').waitFor();
 
       // End of authentication steps.
       await page.context().storageState({ path: fileName });
-      await page.close();
+      // await page.close();
       await use(fileName);
     },
     { scope: "worker" },

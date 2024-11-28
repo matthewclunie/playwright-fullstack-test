@@ -1,10 +1,13 @@
 // import {  Locator } from "@playwright/test";
 import { expect, test, Locator } from "../../fixtures/fixtures";
-import { generateLoginInfo, createUser } from "../../fixtures/mockData";
 import { TransactionData } from "../../types/global";
-import { login, toDollar, toFormattedDate } from "../../utils/helpers";
+import { toDollar, toFormattedDate } from "../../utils/helpers";
 
 test.describe("find transaction tests", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/parabank/findtrans.htm");
+  });
+
   const transactionResultsCheck = async (
     transactionRows: Locator,
     transactionRowCount: number,
@@ -82,8 +85,6 @@ test.describe("find transaction tests", () => {
   //   // const transactionPromise = page.waitForResponse(
   //   //   `http://localhost:8080/parabank/services/bank/transactions/${transaction.id}`
   //   // );
-  //   await login(page, mockUser.username, mockUser.password);
-  //   await page.goto("/parabank/findtrans.htm");
   //   await page.fill("#transactionId", transaction.id.toString());
   //   await page.evaluate(async (url) => {
   //     const res = await fetch(url, {
@@ -102,11 +103,7 @@ test.describe("find transaction tests", () => {
   //   await page.pause();
   // });
 
-  test("should find transaction by date", async ({
-    page,
-    username,
-    password,
-  }) => {
+  test("should find transaction by date", async ({ page }) => {
     const transactionData: TransactionData[] = [
       {
         id: 88888,
@@ -125,7 +122,6 @@ test.describe("find transaction tests", () => {
         description: "Funds Transfer Received",
       },
     ];
-    await login(page, username, password);
 
     //intercept request to mock it
     page.route(
@@ -138,7 +134,6 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-    await page.goto("/parabank/findtrans.htm");
 
     //submit search
     await page.fill("#transactionDate", toFormattedDate(Date.now()));
@@ -155,11 +150,7 @@ test.describe("find transaction tests", () => {
     );
   });
 
-  test("should find transaction by date range", async ({
-    page,
-    username,
-    password,
-  }) => {
+  test("should find transaction by date range", async ({ page }) => {
     const transactionData = [
       {
         id: 77777,
@@ -190,8 +181,6 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-    await login(page, username, password);
-    await page.goto("/parabank/findtrans.htm");
 
     //submit search
     await page.fill("#fromDate", "10-01-2024");
@@ -240,7 +229,6 @@ test.describe("find transaction tests", () => {
         await route.fulfill({ headers, json: transactionData });
       }
     );
-    await page.goto("https://parabank.parasoft.com/parabank/findtrans.htm");
 
     //submit search
     await page.fill("#amount", "400");
@@ -280,7 +268,6 @@ test.describe("find transaction tests", () => {
         errorText: "Invalid amount",
       },
     ];
-    await page.goto("/parabank/findtrans.htm");
 
     //check each search for errors
     for (const { button, errorLocator, errorText } of transactionSearches) {

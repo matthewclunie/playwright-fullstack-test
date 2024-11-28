@@ -1,28 +1,19 @@
 import { expect, Page, test } from "../../fixtures/fixtures";
-import {
-  createUser,
-  generateLoginInfo,
-  mockUser,
-} from "../../fixtures/mockData";
+import { createUser, mockUser } from "../../fixtures/mockData";
 import { UserData } from "../../types/global";
 import { getUserData } from "../../utils/API/misc";
 import { checkHeader } from "../../utils/helpers";
 
-const loginInfo = generateLoginInfo();
-
 test.describe("requires setup user", () => {
   let page: Page;
 
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    page = await context.newPage();
-    await createUser(page, username, password);
-  });
+  // test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("should successfully register user", async () => {
+  test("should successfully register user", async ({ username, password }) => {
     //UI check for new user
     const successfulAccountText =
       "Your account was created successfully. You are now logged in.";
+    await createUser(page, username, password);
     await checkHeader(page, `Welcome ${username}`, successfulAccountText);
 
     //API check for new user
@@ -33,7 +24,10 @@ test.describe("requires setup user", () => {
     expect(lastNameData).toEqual(`${mockUser.lastName}`);
   });
 
-  test("should return username exists error", async () => {
+  test("should return username exists error", async ({
+    username,
+    password,
+  }) => {
     await createUser(page, username, password);
     await expect(page.locator("#customer\\.username\\.errors")).toHaveText(
       "This username already exists."

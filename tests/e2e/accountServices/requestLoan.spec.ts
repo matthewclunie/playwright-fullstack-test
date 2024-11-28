@@ -11,8 +11,6 @@ interface LoanData {
   accountId: number;
 }
 
-const loginInfo = generateLoginInfo();
-
 test.describe("request loan tests", () => {
   const loanUrl =
     "/parabank/services_proxy/bank/requestLoan?customerId=*&amount=*&downPayment=*&fromAccountId=*";
@@ -76,16 +74,12 @@ test.describe("request loan tests", () => {
     }
   };
 
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, username, password);
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/parabank/requestloan.htm");
   });
 
   test("should approve loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, username, password);
-    await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be approved
     await submitLoan(page, 50, 10);
@@ -106,8 +100,6 @@ test.describe("request loan tests", () => {
 
   test("should deny loan", async ({ page }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, username, password);
-    await page.goto("/parabank/requestloan.htm");
 
     //Submit loan to be denied
     await submitLoan(page, 5000, 1000);
@@ -126,10 +118,8 @@ test.describe("request loan tests", () => {
     page,
   }) => {
     const loanPromise = page.waitForResponse(loanUrl);
-    await login(page, username, password);
 
     //Submit incomplete form
-    await page.goto("/parabank/requestloan.htm");
     await submitLoan(page);
     const loanResponse = await loanPromise;
     expect(loanResponse.ok()).toBe(false);

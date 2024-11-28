@@ -1,10 +1,8 @@
 import { expect, Page, test } from "../../fixtures/fixtures";
-import { generateLoginInfo, createUser } from "../../fixtures/mockData";
+import { createUser } from "../../fixtures/mockData";
 import { AccountData } from "../../types/global";
 import { getAccountById } from "../../utils/API/accounts";
 import { login } from "../../utils/helpers";
-
-const loginInfo = generateLoginInfo();
 
 test.describe("open new account tests", () => {
   const confimationCheck = async (
@@ -51,10 +49,17 @@ test.describe("open new account tests", () => {
   const createAccountRoute =
     "/parabank/services_proxy/bank/createAccount?customerId=*&newAccountType=*&fromAccountId=*";
 
-  test.beforeAll("setup", async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await createUser(page, username, password);
+  let createAccountData: AccountData;
+
+  test.beforeEach(async ({ page }) => {
+    const createAccountPromise = page.waitForResponse(createAccountRoute);
+    await page.goto("/parabank/openaccount.htm");
+
+    //Wait for select options to load, create account
+    await createAccount(page, "CHECKING");
+    const createAccountResponse = await createAccountPromise;
+    expect(createAccountResponse.ok()).toBe(true);
+    createAccountData = await createAccountResponse.json();
   });
 
   test("should open checking account", async ({ page }) => {
@@ -62,16 +67,6 @@ test.describe("open new account tests", () => {
       title: "Account Opened!",
       caption: "Congratulations, your account is now open.",
     };
-
-    const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, username, password);
-    await page.goto("/parabank/openaccount.htm");
-
-    //Wait for select options to load, create account
-    await createAccount(page, "CHECKING");
-    const createAccountResponse = await createAccountPromise;
-    expect(createAccountResponse.ok()).toBe(true);
-    const createAccountData: AccountData = await createAccountResponse.json();
 
     //Check UI for account creation confirmation
     await confimationCheck(
@@ -90,16 +85,6 @@ test.describe("open new account tests", () => {
       title: "Account Opened!",
       caption: "Congratulations, your account is now open.",
     };
-
-    const createAccountPromise = page.waitForResponse(createAccountRoute);
-    await login(page, username, password);
-    await page.goto("/parabank/openaccount.htm");
-
-    //Wait for select options to load, create account
-    await createAccount(page, "SAVINGS");
-    const createAccountResponse = await createAccountPromise;
-    expect(createAccountResponse.ok()).toBe(true);
-    const createAccountData: AccountData = await createAccountResponse.json();
 
     //Check UI for account creation confirmation
     await confimationCheck(
